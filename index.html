@@ -28,12 +28,13 @@
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <h1>Eleições no Brasil</h1>
+      <h1><a href="./#2026-2/1" class="home" id="home" title="Voltar à apuração ao vivo do Brasil">Eleições no Brasil</a></h1>
       <p class="sub" id="titulo-sel">2026 · 2º turno · Presidente</p>
     </div>
     <div class="acoes topo-acoes">
       <div class="busca-slot" id="busca-slot"></div>
-      <button type="button" class="tema apoie-bt" data-apoie>♥ Apoie</button>
+      <button type="button" class="pix-topo" data-apoie aria-label="Apoie o projeto: faça um PIX (abre o QR Code)"><img src="pix.svg" alt="" width="52" height="52"><span><b>Apoie o projeto</b>Faça um PIX</span></button>
+      <button type="button" class="tema" id="compartilha" aria-haspopup="true" aria-label="Compartilhar"><span aria-hidden="true">↗</span><span class="rot"> Compartilhar</span></button>
       <button type="button" class="tema" id="tema"></button>
     </div>
   </header>
@@ -51,6 +52,7 @@
   <section class="card proj" id="abstencao" role="tabpanel" aria-label="Abstenção" hidden></section>
 
   <div class="visao" id="v-pres" hidden>
+    <div class="vivo-15" id="vivo-15" hidden><span class="anel" aria-hidden="true"></span><span class="t"><b>Atualizado a cada 15 segundos</b><span class="cd">conectando…</span><span class="ul"></span></span></div>
     <div class="status linha-status" aria-live="polite"><span class="dot" id="status-dot"></span><span id="status-txt">Carregando…</span><span id="sub-eleicao" hidden></span></div>
     <nav class="els" id="eleicoes" hidden></nav>
     <section class="placar" aria-label="Resultado no Brasil">
@@ -91,6 +93,7 @@
 
   <!-- governador 2026 2º turno ao vivo -->
   <div class="visao" id="v-gov" hidden>
+    <div class="vivo-15" id="vivo-15"><span class="anel" aria-hidden="true"></span><span class="t"><b>Atualizado a cada 15 segundos</b><span class="cd">conectando…</span><span class="ul"></span></span></div>
     <div class="status linha-status" aria-live="polite"><span class="dot" id="status-dot"></span><span id="status-txt">Carregando…</span><span id="sub-eleicao" hidden> </span></div>
     <nav class="els" id="ufs" aria-label="Escolha o estado"></nav>
     <section class="placar" aria-label="Resultado no estado">
@@ -147,6 +150,7 @@
     <p>Percentuais sobre votos válidos do cargo. Em anos com duas vagas no Senado cada eleitor vota duas vezes, então os percentuais somam 200%. A área de cada zona eleitoral é aproximada (o TSE não publica o contorno), desenhada a partir da posição dos locais de votação. Municípios criados depois de uma eleição aparecem sem cor nela. Fotos dos candidatos só existem de 2004 em diante. Mapa base © OpenStreetMap, OpenFreeMap.</p>
   </footer>
 </div>
+<button type="button" class="pix-flutua" data-apoie aria-label="Apoie o projeto: faça um PIX">♥ Faça um PIX</button>
 <dialog class="pix" id="pix" aria-labelledby="pix-tit">
   <h2 id="pix-tit">Apoie o site</h2>
   <p>Qualquer valor ajuda a manter o site no ar. Aponte a câmera do app do banco para o QR Code ou copie o código.</p>

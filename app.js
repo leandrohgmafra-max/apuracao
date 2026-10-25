@@ -15,7 +15,8 @@
   const ESCURO = TEMA ? TEMA === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   // Troca de tema recarrega a página: as cores do mapa e dos gráficos são fixadas na criação.
   const btTema = document.getElementById('tema');
-  btTema.textContent = ESCURO ? '☀ Tema claro' : '☾ Tema escuro';
+  btTema.innerHTML = ESCURO ? '<span aria-hidden="true">☀</span><span class="rot"> Tema claro</span>' : '<span aria-hidden="true">☾</span><span class="rot"> Tema escuro</span>';
+  btTema.title = ESCURO ? 'Mudar para o tema claro' : 'Mudar para o tema escuro'; btTema.setAttribute('aria-label', btTema.title);
   btTema.addEventListener('click', () => {
     try { localStorage.setItem('tema', ESCURO ? 'light' : 'dark'); } catch (e) { /* sem storage: só nesta visita */ }
     document.documentElement.dataset.theme = ESCURO ? 'light' : 'dark';
@@ -43,6 +44,7 @@
     locais: {},         // UF -> [locais]
     cidades: [], ufsGeo: null, mundoGeo: null, ufBox: {},
     evol: [],
+    foco: null,         // número do candidato em análise (clique no placar)
   };
   const ordem = new Map(); // numero -> índice de cor
 
@@ -248,11 +250,20 @@
   }
   function status() {
     const dot = $('status-dot'), t = $('status-txt');
+    $('vivo-15').hidden = S.el !== AO_VIVO;
     if (S.el !== AO_VIVO) { dot.className = 'dot'; t.textContent = 'Resultado final · dados abertos do TSE'; return; }
     if (S.live.ok === false && falhasSeguidas > 1) { dot.className = 'dot erro'; t.textContent = 'Sem resposta do TSE, tentando de novo'; return; }
     if (!ultimaAtualizacao) { dot.className = 'dot'; t.textContent = 'Conectando ao TSE…'; return; }
     const s = Math.round((Date.now() - ultimaAtualizacao) / 1000);
     dot.className = 'dot ao-vivo';
+    const ind = $('vivo-15');
+    if (ind) {
+      const prox = Math.max(0, 15 - s);
+      const hl = new Date(ultimaAtualizacao).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+      ind.querySelector('.cd').textContent = prox ? `próxima leitura em ${prox} s` : 'lendo o TSE…';
+      ind.querySelector('.ul').textContent = `última leitura ${hl}`;
+      ind.querySelector('.anel').style.setProperty('--p', String((15 - prox) / 15));
+    }
     // antes da primeira divulgação o arquivo do TSE traz a data em que foi preparado (véspera), não uma divulgação
     t.textContent = S.live.br && S.live.br.st ? `Ao vivo · atualizado há ${s}s · divulgação TSE ${S.live.hora}` : `Ao vivo · conectado ao TSE, aguardando a primeira divulgação (17h de Brasília)`;
   }
@@ -268,7 +279,10 @@
       const sw = el('span', 'sw'); sw.style.background = cor(c.n);
       const f = foto(c.n) || el('span');
       f.onerror = () => { f.replaceWith(el('span')); };
-      d.append(sw, f, el('span', 'nm', nomeCand(c.n)), el('span', 'pc', b.validos ? pct(c.v / b.validos) : '—'), el('span', 'vt', nf.format(c.v) + ' votos'));
+      d.append(sw, f, el('span', 'nm', nomeCand(c.n)), el('span', 'pc', b.validos ? pct(c.v / b.validos) : '—'), el('span', 'vt', nf.format(c.v) + ' votos'), el('span', 'ver', S.foco === c.n ? 'Fechar análise' : 'Ver análise e mapa'));
+      d.setAttribute('role', 'button'); d.tabIndex = 0; d.setAttribute('aria-pressed', String(S.foco === c.n));
+      const vai = () => focaCandidato(S.foco === c.n ? null : c.n);
+      d.addEventListener('click', vai); d.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); vai(); } });
       return d;
     }));
     const nota = $('nota-brasil');
@@ -289,6 +303,7 @@
 
   function iniciaMapa() {
     mapa = new maplibregl.Map({
+      locale: { 'NavigationControl.ZoomIn': 'Aproximar o mapa (zoom +)', 'NavigationControl.ZoomOut': 'Afastar o mapa (zoom −)' }, 
       container: $('mapa'),
       style: ESCURO ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron',
       center: [-30, 5], zoom: 1.4, minZoom: 1, maxZoom: 17, attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false,
@@ -311,10 +326,11 @@
       fill('zonas-fill', 'zonas', 8.5, 24, ['interpolate', ['linear'], ['zoom'], 8.5, 0, 9.5, ['coalesce', ['get', 'op'], 0], 13, ['*', 0.4, ['coalesce', ['get', 'op'], 0]]]);
       mapa.addLayer({ id: 'zonas-line', type: 'line', source: 'zonas', minzoom: 8.5, paint: { 'line-color': ESCURO ? '#eceae4' : '#1b1d22', 'line-width': 1, 'line-dasharray': [2, 1.5], 'line-opacity': 0.7 } });
       mapa.addLayer({ id: 'zonas-rot', type: 'symbol', source: 'zonas', minzoom: 10, layout: { 'text-field': ['concat', 'Zona ', ['to-string', ['get', 'zona']]], 'text-size': 11, 'text-font': ['Noto Sans Regular'] }, paint: { 'text-color': ESCURO ? '#eceae4' : '#1b1d22', 'text-halo-color': ESCURO ? '#121417' : '#ffffff', 'text-halo-width': 1.2 } });
-      mapa.addLayer({ id: 'locais-pt', type: 'circle', source: 'locais', minzoom: 10.5, paint: { 'circle-color': ['coalesce', ['get', 'cor'], '#888'], 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.5, ['*', 0.6, ['get', 'r']], 15, ['*', 1.6, ['get', 'r']]], 'circle-stroke-color': ESCURO ? '#121417' : '#ffffff', 'circle-stroke-width': 1, 'circle-opacity': 0.9 } });
+      mapa.addLayer({ id: 'locais-pt', type: 'circle', source: 'locais', minzoom: 10.5, paint: { 'circle-color': ['coalesce', ['get', 'cor'], '#888'], 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.5, ['*', 0.6, ['get', 'r']], 15, ['*', 1.6, ['get', 'r']]], 'circle-stroke-color': ['case', ['==', ['get', 'sel'], 1], '#ffd400', ESCURO ? '#121417' : '#ffffff'], 'circle-stroke-width': ['case', ['==', ['get', 'sel'], 1], 4, 1], 'circle-opacity': ['coalesce', ['get', 'op'], 0.9], 'circle-stroke-opacity': ['case', ['==', ['get', 'sel'], 1], 1, ['coalesce', ['get', 'op'], 0.9]] } });
       mapa.addLayer({ id: 'cidades-pt', type: 'circle', source: 'cidades', paint: { 'circle-color': ['coalesce', ['get', 'cor'], '#888'], 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, ['get', 'r'], 8, ['*', 2, ['get', 'r']]], 'circle-stroke-color': ESCURO ? '#121417' : '#ffffff', 'circle-stroke-width': 1 } });
       mapa.addLayer({ id: 'sel-line', type: 'line', source: 'sel', paint: { 'line-color': ESCURO ? '#ffffff' : '#111111', 'line-width': 2.5 } });
 
+      mapa.addLayer({ id: 'locais-sel', type: 'circle', source: 'locais', minzoom: 10.5, filter: ['==', ['get', 'sel'], 1], paint: { 'circle-color': ['get', 'cor'], 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.5, ['*', 1.2, ['get', 'r']], 15, ['*', 3, ['get', 'r']]], 'circle-stroke-color': '#ffd400', 'circle-stroke-width': 4 } });
       const ordemClique = ['locais-pt', 'cidades-pt', 'zonas-fill', 'mun-fill', 'ufs-fill', 'paises-fill'];
       mapa.on('click', (e) => {
         const fs = mapa.queryRenderedFeatures(e.point, { layers: ordemClique.filter((l) => mapa.getLayer(l)) });
@@ -374,7 +390,16 @@
     if (S.el === AO_VIVO && z >= 9) cicloZonas();
   }
 
-  function corOp(l) { const L = lider(l); return L ? { cor: cor(L.n), op: Math.max(0.3, Math.min(0.92, 0.3 + (L.p - 0.4) * 1.9)) } : { cor: null, op: 0 }; }
+  function corOp(l) {
+    if (S.foco) {  // análise de um candidato: tom proporcional à fatia dele nos válidos
+      if (!l || !l.validos) return { cor: null, op: 0 };
+      const p = (l.votos[S.foco] || 0) / l.validos;
+      return { cor: cor(S.foco), op: Math.max(0.04, Math.min(0.95, (p - 0.1) * 1.6)) };
+    }
+    const L = lider(l); return L ? { cor: cor(L.n), op: Math.max(0.3, Math.min(0.92, 0.3 + (L.p - 0.4) * 1.9)) } : { cor: null, op: 0 };
+  }
+  // ao vivo sem nenhuma seção apurada, a análise de candidato usa o 1º turno de 2026
+  const usaT1 = () => S.foco && S.el === AO_VIVO && !(S.live.br && S.live.br.st);
 
   function montaCidades() {
     if (!mapa || !mapa.getSource('cidades')) return;
@@ -387,6 +412,11 @@
 
   function pinta() {
     if (!mapa || !mapa.getSource('paises')) return;
+    const el0 = S.el;
+    if (usaT1()) { S.el = '2026-1'; for (const uf of ufsVisiveis().slice(0, 4)) if (!S.mun['2026-1|' + uf]) carregaMunHist('2026-1', uf); }
+    try { pinta0(el0); } finally { S.el = el0; }
+  }
+  function pinta0(el0) {
     S.mundoGeo.features.forEach((f) => { const id = f.properties.id; if (id === '76') { f.properties.cor = null; f.properties.op = 0; return; } Object.assign(f.properties, corOp(res('pais', id))); });
     mapa.getSource('paises').setData(S.mundoGeo);
     S.ufsGeo.features.forEach((f) => Object.assign(f.properties, corOp(res('uf', f.properties.uf))));
@@ -403,9 +433,18 @@
         const b = mapa.getBounds();
         for (const l of ls) {
           if (!l.lat || l.lat === -1 || l.lon < b.getWest() - 0.1 || l.lon > b.getEast() + 0.1 || l.lat < b.getSouth() - 0.1 || l.lat > b.getNorth() + 0.1) continue;
-          let c = ESCURO ? '#cfd3d8' : '#4a4f57';
-          if (S.el === '2026-1' && l.t1) { const L = lider({ votos: Object.fromEntries(Object.entries(l.t1).map(([k, v]) => [k.slice(1), v])), validos: 1 }); if (L) c = cor(L.n); }
-          locF.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [l.lon, l.lat] }, properties: { uf, cod: l.cod, zona: l.zona, local: l.local, nome: l.nome, r: Math.max(2.5, Math.min(8, Math.sqrt(l.eleitores) / 9)), cor: c } });
+          // o TSE não divulga voto por local ao vivo: no 2º turno os pontos mostram o 1º turno entre os dois finalistas
+          let c = ESCURO ? '#cfd3d8' : '#4a4f57', op = 0.9;
+          if ((S.el === '2026-1' || el0 === AO_VIVO) && l.t1) {
+            let v = Object.fromEntries(Object.entries(l.t1).map(([k, x]) => [k.slice(1), x]));
+            if (el0 === AO_VIVO && !S.foco) v = { 13: v[13] || 0, 22: v[22] || 0 };
+            const val = Object.entries(v).filter(([k]) => k !== '95' && k !== '96').reduce((a, [, x]) => a + x, 0);
+            if (S.foco) { c = cor(S.foco); op = Math.max(0.12, Math.min(1, ((v[S.foco] || 0) / (val || 1) - 0.1) * 1.8)); }
+            else { const L = lider({ votos: v, validos: val || 1 }); if (L) { c = cor(L.n); op = Math.max(0.45, Math.min(1, 0.45 + (L.p - 0.5) * 2.5)); } }
+          }
+          const ehSel = S.sel.nivel === 'local' && S.sel.cod === `${l.cod}|${l.zona}|${l.local}`;
+          if (S.sel.nivel === 'local' && !ehSel) op = Math.max(0.3, op * 0.55);
+          locF.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [l.lon, l.lat] }, properties: { uf, cod: l.cod, zona: l.zona, local: l.local, nome: l.nome, r: Math.max(2.5, Math.min(8, Math.sqrt(l.eleitores) / 9)), cor: c, op, sel: ehSel ? 1 : 0 } });
         }
       }
     }
@@ -427,10 +466,17 @@
   }
 
   function legenda() {
+    const leg0 = $('legenda');
+    if (S.foco) {
+      const s = el('span', 'leg-foco'); const g = el('i', 'grad'); g.style.background = `linear-gradient(90deg, transparent, ${cor(S.foco)})`;
+      s.append(document.createTextNode('Fatia de ' + nomeCand(S.foco) + ': 10%'), g, document.createTextNode('70%+' + (usaT1() ? ' · 1º turno de 2026, até sair a 1ª divulgação' : '')));
+      leg0.replaceChildren(s); return;
+    }
     const b = res('brasil');
     const r = ranking(b).slice(0, 4);
     const leg = $('legenda');
-    leg.replaceChildren(...r.map((c) => { const s = el('span'); const i = el('i'); i.style.background = cor(c.n); s.append(i, document.createTextNode(nomeCand(c.n))); return s; }), el('span', null, 'Tom mais forte = vitória mais folgada'));
+    leg.replaceChildren(...r.map((c) => { const s = el('span'); const i = el('i'); i.style.background = cor(c.n); s.append(i, document.createTextNode(nomeCand(c.n))); return s; }), el('span', null, 'Tom mais forte = vitória mais folgada'),
+      ...(S.el === AO_VIVO && mapa && mapa.getZoom() >= 10.5 ? [el('span', null, 'Pontos (locais de votação): 1º turno entre os dois finalistas; o TSE não divulga voto por local ao vivo')] : []));
   }
 
   function dica(layer, p) {
@@ -535,9 +581,46 @@
     return p.join(' · ');
   }
 
+  function focaCandidato(n) {
+    S.foco = n;
+    placar(); pinta(); painel();
+    if (n) $('mapa').scrollIntoView({ behavior: MOV ? 'smooth' : 'auto', block: 'start' });
+  }
+  // análise de um candidato: por região, estado e município do estado escolhido
+  function analise(P) {
+    const n = S.foco, el0 = S.el;
+    if (usaT1()) S.el = '2026-1';
+    try {
+      const fat = (l) => (l && l.validos ? (l.votos[n] || 0) / l.validos : null);
+      const topo = el('div', 'analise');
+      const fecha = el('button', 'tema', 'Fechar análise'); fecha.type = 'button'; fecha.onclick = () => focaCandidato(null);
+      topo.append(el('p', 'nivel', 'Análise do candidato' + (S.el !== el0 ? ' · 1º turno de 2026 (o 2º turno ainda não tem votos)' : '')), el('h3', null, nomeCand(n)), fecha);
+      const br = res('brasil');
+      topo.append(el('p', 'meta', `Brasil: ${pct(fat(br))} dos válidos · ${nf.format((br && br.votos[n]) || 0)} votos`));
+      const linha = (rot, l, click) => ({ cells: [rot, pct(fat(l), 1), nf.format((l && l.votos[n]) || 0)], cor: cor(n), corCol: 1, click });
+      topo.append(el('h4', null, 'Por região'));
+      topo.append(tabela(['Região', '%', 'Votos'], Object.entries(REGIOES).map(([k, [nome, ufs]]) => [k, nome, soma(ufs.map((u) => res('uf', u)))]).sort((a, b) => (fat(b[2]) || 0) - (fat(a[2]) || 0)).map(([k, nome, l]) => linha(nome, l, () => escolhe({ nivel: 'regiao', cod: k })))));
+      const ufs = UFS.map((u) => [u, res('uf', u)]).filter(([, l]) => l && l.validos).sort((a, b) => fat(b[1]) - fat(a[1]));
+      if (ufs.length) {
+        topo.append(el('h4', null, 'Estados onde foi melhor e pior'));
+        topo.append(tabela(['Estado', '%', 'Votos'], [...ufs.slice(0, 5), ...ufs.slice(-5)].map(([u, l]) => linha(UF_NOME[u], l, () => escolhe({ nivel: 'uf', uf: u })))));
+      }
+      const uf = S.sel.uf;
+      if (uf && S.geoMun[uf]) {
+        const ms = S.geoMun[uf].features.map((f) => [f.properties.cod, f.properties.nome, res('mun', f.properties.cod)]).filter(([, , l]) => l && l.validos).sort((a, b) => fat(b[2]) - fat(a[2]));
+        if (ms.length) {
+          topo.append(el('h4', null, `Municípios de ${UF_NOME[uf] || uf}: melhores e piores`));
+          topo.append(tabela(['Município', '%', 'Votos'], (ms.length > 12 ? [...ms.slice(0, 6), ...ms.slice(-6)] : ms).map(([c, nome, l]) => linha(nome, l, () => escolhe({ nivel: 'mun', cod: c, uf, nome })))));
+        }
+      } else topo.append(el('p', 'meta', 'Clique num estado para ver os municípios. Aproxime o mapa para ver zonas e locais de votação na cor do candidato.'));
+      P.append(topo);
+    } finally { S.el = el0; }
+  }
+
   function painel() {
     const P = $('painel');
     P.replaceChildren();
+    if (S.foco) { analise(P); return; }
     const s = S.sel;
     const cab = (nivel, nome, loc) => { P.append(el('p', 'nivel', nivel), el('h3', null, nome), el('p', 'meta', meta(loc))); barras(loc, P); };
     if (s.nivel === 'mundo' || s.nivel === 'brasil') {

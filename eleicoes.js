@@ -13,7 +13,8 @@
   const TEMA = document.documentElement.dataset.theme;
   const ESCURO = TEMA ? TEMA === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   const btTema = document.getElementById('tema');
-  btTema.textContent = ESCURO ? '☀ Tema claro' : '☾ Tema escuro';
+  btTema.innerHTML = ESCURO ? '<span aria-hidden="true">☀</span><span class="rot"> Tema claro</span>' : '<span aria-hidden="true">☾</span><span class="rot"> Tema escuro</span>';
+  btTema.title = ESCURO ? 'Mudar para o tema claro' : 'Mudar para o tema escuro'; btTema.setAttribute('aria-label', btTema.title);
   btTema.addEventListener('click', () => {
     try { localStorage.setItem('tema', ESCURO ? 'light' : 'dark'); } catch (e) { /* sem storage: só nesta visita */ }
     location.reload();
@@ -230,7 +231,7 @@
   }
   const opac = (p) => Math.max(0.18, Math.min(0.9, 0.2 + (p - 0.3) * 1.1));
   function iniciaMapa() {
-    mapa = new maplibregl.Map({ container: $('mapa'), style: ESCURO ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron', center: [-53, -14], zoom: 3.2, minZoom: 2, dragRotate: false, attributionControl: { compact: true } });
+    mapa = new maplibregl.Map({ locale: { 'NavigationControl.ZoomIn': 'Aproximar o mapa (zoom +)', 'NavigationControl.ZoomOut': 'Afastar o mapa (zoom −)' }, container: $('mapa'), style: ESCURO ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron', center: [-53, -14], zoom: 3.2, minZoom: 2, dragRotate: false, attributionControl: { compact: true } });
     mapa.touchZoomRotate.disableRotation();
     mapa.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     return new Promise((ok) => mapa.on('load', async () => {

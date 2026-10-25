@@ -65,8 +65,9 @@
     const numZona = Q.zona ?? (Q.num.length ? Q.num[0] : null);
     for (const it of itens) {
       if (it.t === 'zona') {
-        if (numZona == null || it.z !== numZona || !Q.txt.length || !casa(it.h, Q.txt)) continue;
-        res.push([it, 3]);
+        // "248" ou "zona 248" sem cidade lista essa zona em todos os municípios
+        if (numZona == null || it.z !== numZona || (Q.txt.length && !casa(it.h, Q.txt))) continue;
+        res.push([it, Q.txt.length ? 3 : 0]);
       } else if (!Q.zona && !Q.secao && !Q.num.length && Q.txt.length && casa(it.h, Q.txt)) {
         let p = { regiao: 0, uf: 0, mun: 2, cidade: 4 }[it.t];
         if (it.sig && Q.txt.length === 1 && Q.txt[0] === it.sig) p = -2;
@@ -89,7 +90,7 @@
       }
     }
     res.sort((a, b) => a[1] - b[1] || a[0].rot.length - b[0].rot.length);
-    return res.slice(0, 12).map((r) => r[0]);
+    return res.slice(0, Q.txt.length ? 12 : 30).map((r) => r[0]);
   }
 
   // ---------- lista ----------

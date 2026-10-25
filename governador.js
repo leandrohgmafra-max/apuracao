@@ -10,7 +10,8 @@
   const TEMA = document.documentElement.dataset.theme;
   const ESCURO = TEMA ? TEMA === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   const btTema = document.getElementById('tema');
-  btTema.textContent = ESCURO ? '☀ Tema claro' : '☾ Tema escuro';
+  btTema.innerHTML = ESCURO ? '<span aria-hidden="true">☀</span><span class="rot"> Tema claro</span>' : '<span aria-hidden="true">☾</span><span class="rot"> Tema escuro</span>';
+  btTema.title = ESCURO ? 'Mudar para o tema claro' : 'Mudar para o tema escuro'; btTema.setAttribute('aria-label', btTema.title);
   btTema.addEventListener('click', () => {
     try { localStorage.setItem('tema', ESCURO ? 'light' : 'dark'); } catch (e) { /* sem storage: só nesta visita */ }
     location.reload();
@@ -70,6 +71,12 @@
     const r = S.est[S.uf];
     $('status-dot').className = 'dot ' + (S.erro ? 'erro' : 'ao-vivo');
     const seg = S.ultimo ? Math.round((Date.now() - S.ultimo) / 1000) : null;
+    if (S.ultimo) {
+      const ind = $('vivo-15'), prox = Math.max(0, 15 - seg);
+      ind.querySelector('.cd').textContent = prox ? `próxima leitura em ${prox} s` : 'lendo o TSE…';
+      ind.querySelector('.ul').textContent = 'última leitura ' + new Date(S.ultimo).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+      ind.querySelector('.anel').style.setProperty('--p', String((15 - prox) / 15));
+    }
     $('status-txt').textContent = (S.erro ? 'Falha ao ler o TSE, tentando de novo' : 'Ao vivo') + (seg != null ? ` · atualizado há ${seg}s` : '') + (r && r.st ? ` · divulgação TSE ${r.hora}` : r ? ' · aguardando a primeira divulgação (17h de Brasília)' : '');
   }
   function desenhaUfs() {
@@ -139,7 +146,7 @@
     return [[x0, y0], [x1, y1]];
   }
   function iniciaMapa() {
-    mapa = new maplibregl.Map({ container: $('mapa'), style: ESCURO ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron', center: [-50, -12], zoom: 3.5, dragRotate: false, attributionControl: { compact: true } });
+    mapa = new maplibregl.Map({ locale: { 'NavigationControl.ZoomIn': 'Aproximar o mapa (zoom +)', 'NavigationControl.ZoomOut': 'Afastar o mapa (zoom −)' }, container: $('mapa'), style: ESCURO ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron', center: [-50, -12], zoom: 3.5, dragRotate: false, attributionControl: { compact: true } });
     mapa.touchZoomRotate.disableRotation();
     mapa.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     return new Promise((ok) => mapa.on('load', () => {
