@@ -70,7 +70,7 @@
     const r = S.est[S.uf];
     $('status-dot').className = 'dot ' + (S.erro ? 'erro' : 'ao-vivo');
     const seg = S.ultimo ? Math.round((Date.now() - S.ultimo) / 1000) : null;
-    $('status-txt').textContent = (S.erro ? 'Falha ao ler o TSE, tentando de novo' : 'Ao vivo') + (seg != null ? ` · atualizado há ${seg}s` : '') + (r ? ` · TSE ${r.hora}` : '');
+    $('status-txt').textContent = (S.erro ? 'Falha ao ler o TSE, tentando de novo' : 'Ao vivo') + (seg != null ? ` · atualizado há ${seg}s` : '') + (r && r.st ? ` · divulgação TSE ${r.hora}` : r ? ' · aguardando a primeira divulgação (17h de Brasília)' : '');
   }
   function desenhaUfs() {
     const nav = $('ufs'); nav.textContent = '';
@@ -87,7 +87,7 @@
     const ap = r.secoes ? r.st / r.secoes : 0;
     $('pct-apurado').textContent = pct(ap);
     $('progress-fill').style.width = (ap * 100) + '%';
-    $('hora-tse').textContent = '· divulgação TSE ' + r.hora;
+    $('hora-tse').textContent = r.st ? '· divulgação TSE ' + r.hora : '';
     r.cands.forEach((c, i) => {
       const d = el('div', 'cand com-foto' + (i > 1 ? ' menor' : ''));
       const sw = el('i', 'sw'); sw.style.background = cor(c.n);

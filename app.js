@@ -253,14 +253,15 @@
     if (!ultimaAtualizacao) { dot.className = 'dot'; t.textContent = 'Conectando ao TSE…'; return; }
     const s = Math.round((Date.now() - ultimaAtualizacao) / 1000);
     dot.className = 'dot ao-vivo';
-    t.textContent = `Ao vivo · atualizado há ${s}s · TSE ${S.live.hora}`;
+    // antes da primeira divulgação o arquivo do TSE traz a data em que foi preparado (véspera), não uma divulgação
+    t.textContent = S.live.br && S.live.br.st ? `Ao vivo · atualizado há ${s}s · divulgação TSE ${S.live.hora}` : `Ao vivo · conectado ao TSE, aguardando a primeira divulgação (17h de Brasília)`;
   }
   function placar() {
     const b = res('brasil');
     const ap = apurado(b);
     $('pct-apurado').textContent = b ? pct(ap, 2) : '—';
     $('progress-fill').style.width = b ? (ap * 100) + '%' : '0';
-    $('hora-tse').textContent = b && S.el === AO_VIVO && b.hora ? '· divulgação TSE ' + b.hora : '';
+    $('hora-tse').textContent = b && S.el === AO_VIVO && b.hora && b.st ? '· divulgação TSE ' + b.hora : '';
     const r = ranking(b);
     $('cands').replaceChildren(...r.slice(0, 6).map((c, i) => {
       const d = el('div', 'cand com-foto' + (i > 1 ? ' menor' : ''));

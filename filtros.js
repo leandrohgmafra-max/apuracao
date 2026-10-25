@@ -72,6 +72,7 @@
 
   // busca do topo: estado e município ficam na visão histórica quando ela está aberta; o resto vai para o mapa do presidente
   window.buscaVai = (sel) => {
+    if (window.projecaoAba) window.projecaoAba('apuracao'); // resultado da busca aparece no mapa
     if (S.visao === 'hist' && window.eleicoesVaiPara && window.eleicoesVaiPara(sel)) return;
     if (S.visao !== 'pres') escolhe(PRES.includes(S.el) ? S.el : AO_VIVO, 1);
     const t = setInterval(() => {

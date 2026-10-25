@@ -33,6 +33,7 @@
     </div>
     <div class="acoes topo-acoes">
       <div class="busca-slot" id="busca-slot"></div>
+      <button type="button" class="tema apoie-bt" data-apoie>♥ Apoie</button>
       <button type="button" class="tema" id="tema"></button>
     </div>
   </header>
@@ -44,7 +45,10 @@
   </section>
 
   <!-- presidente 2014-2026 (mapa do mundo, zonas e locais; 2026 2º turno ao vivo) -->
-  <section class="card proj" id="projecao" aria-label="Projeção" hidden></section>
+  <nav class="abas" id="abas" role="tablist" aria-label="Seções da apuração ao vivo" hidden></nav>
+  <section class="card proj" id="projecao" role="tabpanel" aria-label="Projeção" hidden></section>
+  <section class="card proj" id="apostas" role="tabpanel" aria-label="Mercado de apostas" hidden></section>
+  <section class="card proj" id="abstencao" role="tabpanel" aria-label="Abstenção" hidden></section>
 
   <div class="visao" id="v-pres" hidden>
     <div class="status linha-status" aria-live="polite"><span class="dot" id="status-dot"></span><span id="status-txt">Carregando…</span><span id="sub-eleicao" hidden></span></div>
@@ -138,16 +142,26 @@
   </div>
 
   <footer class="rodape">
+    <p class="rodape-apoie">Gostou? Este site é independente e gratuito. <button type="button" class="link" data-apoie>Apoie com PIX</button>.</p>
     <p>Fonte: Tribunal Superior Eleitoral. 2º turno de 2026 (presidente e governador) lido ao vivo de resultados.tse.jus.br pelo seu navegador a cada 15 segundos. Demais eleições, municípios, zonas, locais de votação e fotos: Portal de Dados Abertos do TSE.</p>
     <p>Percentuais sobre votos válidos do cargo. Em anos com duas vagas no Senado cada eleitor vota duas vezes, então os percentuais somam 200%. A área de cada zona eleitoral é aproximada (o TSE não publica o contorno), desenhada a partir da posição dos locais de votação. Municípios criados depois de uma eleição aparecem sem cor nela. Fotos dos candidatos só existem de 2004 em diante. Mapa base © OpenStreetMap, OpenFreeMap.</p>
   </footer>
 </div>
+<dialog class="pix" id="pix" aria-labelledby="pix-tit">
+  <h2 id="pix-tit">Apoie o site</h2>
+  <p>Qualquer valor ajuda a manter o site no ar. Aponte a câmera do app do banco para o QR Code ou copie o código.</p>
+  <img src="pix.svg" width="220" height="220" alt="QR Code PIX para Leandro Henrique Goncalve">
+  <p class="pix-nome">Leandro Henrique Goncalve · São Paulo</p>
+  <textarea id="pix-cod" readonly rows="3" aria-label="Código PIX copia e cola">00020101021126580014BR.GOV.BCB.PIX0136f9ae59ed-8fcb-4dce-95bd-372a6102edf05204000053039865802BR5925Leandro Henrique Goncalve6009SAO PAULO62080504daqr630491F8</textarea>
+  <div class="pix-acoes"><button type="button" class="tema" id="pix-copia">Copiar código PIX</button><button type="button" class="tema" id="pix-fecha">Fechar</button></div>
+</dialog>
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="app.js"></script>
 <script src="governador.js"></script>
 <script src="eleicoes.js"></script>
 <script src="filtros.js"></script>
 <script src="projecao.js"></script>
+<script src="apoie.js"></script>
 <script src="busca.js"></script>
 </body>
 </html>
