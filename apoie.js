@@ -27,11 +27,20 @@
     const caminho = crumbs ? crumbs.textContent.replace(/\s*›\s*/g, ' › ').trim() : '';
     const tit = document.getElementById('titulo-sel').textContent;
     let url = location.href;
+    // o X guarda a prévia pelo endereço (sem o #): ?v=<nome da imagem de prévia> faz cada imagem nova virar um endereço novo
+    const comVersao = (u) => {
+      try {
+        const og = document.querySelector('meta[property="og:image"]'), x = new URL(u);
+        const v = og && og.content.split('/').pop().replace(/\.[a-z]+$/i, '');
+        if (v) x.searchParams.set('v', v);
+        return x.href;
+      } catch (e) { return u; }
+    };
     // no mapa do presidente o lugar escolhido não fica no endereço: vai no formato da busca (#ir=)
     const ap = window.apuracao && window.apuracao.estado;
     if (vis && vis.id === 'v-pres' && ap && ap.sel && !['mundo', 'brasil'].includes(ap.sel.nivel) && ap.el === '2026-2') url = location.origin + location.pathname + '#ir=' + encodeURIComponent(JSON.stringify(ap.sel));
     const texto = `${tit}${caminho ? ' · ' + caminho : ''} · resultado do TSE atualizado a cada 15 s`;
-    return { url, texto };
+    return { url: comVersao(url), texto };
   }
   let menu = null;
   bt.addEventListener('click', async () => {
