@@ -188,3 +188,10 @@ tbody tr.click:hover td { background: var(--bg); }
 @media (max-width: 560px) { .proj-cand .pc { font-size: 1.6rem; } }
 .proj { grid-template-columns: minmax(0, 1fr); }
 .proj > * { min-width: 0; }
+.abst-barras { display: grid; gap: 4px; }
+.abst-l { display: grid; grid-template-columns: minmax(0, 12rem) 1fr auto; gap: 8px; align-items: center; font-size: .85rem; }
+.abst-r { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.abst-w { background: var(--line); height: 10px; border-radius: 5px; overflow: hidden; }
+.abst-b { display: block; height: 100%; background: var(--muted); }
+.abst-v { font-family: var(--font-mono); font-size: .78rem; color: var(--muted); }
+@media (max-width: 560px) { .abst-l { grid-template-columns: minmax(0, 7rem) 1fr; } .abst-v { grid-column: 2; } }

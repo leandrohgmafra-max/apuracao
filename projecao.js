@@ -43,6 +43,8 @@
         S.nSerie = p.n_serie;
       }
     } catch (e) { S.erro = true; }
+    const k = corridaDoEndereco();
+    if (k) { AB.t = 0; await baixaAbstencao(k); }
     desenha();
   }
 
@@ -62,7 +64,7 @@
     const k = corridaDoEndereco();
     caixa.hidden = !k;
     if (!k) return;
-    if (k !== S.corrida) { S.corrida = k; S.idx = null; S.sim = null; }
+    if (k !== S.corrida) { S.corrida = k; S.idx = null; S.sim = null; AB.t = 0; baixaAbstencao(k).then(desenha); }
     caixa.textContent = '';
     const cab = el('div', 'proj-cab');
     cab.append(el('h2', null, k === 'br' ? 'Projeção · Presidente' : 'Projeção · Governador ' + k.toUpperCase()));
@@ -124,6 +126,7 @@
     if (!passado) { virar(c, mm); simulador(c, mm); comparativo(c, modelos); onde(c, mm, k); }
     linhaTempo(pts, k);
     if (k === 'br') apostas(c);
+    abstencao(k);
   }
 
   function virar(c, mm) {
@@ -263,6 +266,64 @@
     box.append(r, el('p', 'nota', 'Arraste para ver como a apuração e a projeção estavam em cada momento.'));
     caixa.append(box);
   }
+  // ---------- abstenção: ao vivo (TSE) e perfil do 1º turno (perfil_comparecimento_abstencao) ----------
+  const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PR', 'PB', 'PA', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SE', 'SP', 'TO', 'ZZ'];
+  const AB = { vivo: {}, perfil: null, dim: 'idade', t: 0 };
+  const DIMS = [['idade', 'Idade'], ['genero', 'Gênero'], ['escolaridade', 'Escolaridade'], ['cor', 'Cor ou raça'], ['civil', 'Estado civil'], ['voto', 'Voto obrigatório ou facultativo']];
+  async function baixaAbstencao(k) {
+    if (!AB.perfil) AB.perfil = fetch('data/abstencao_2026_1.json').then((r) => r.json()).catch(() => ({}));
+    if (Date.now() - AB.t < 60000) return;
+    AB.t = Date.now();
+    const TSE = 'https://resultados.tse.jus.br/oficial/ele2026';
+    const alvos = k === 'br' ? ['br', ...UFS.map((u) => u.toLowerCase())].map((u) => [u, `${TSE}/6258/dados/${u}/${u}-c0001-e006258-u.json`]) : [[k, `${TSE}/6260/dados/${k}/${k}-c0003-e006260-u.json`]];
+    await Promise.all(alvos.map(([u, url]) => fetch(url).then((r) => r.json()).then((d) => { AB.vivo[u] = { est: +d.e.est || 0, a: +d.e.a || 0, te: +d.e.te || 0 }; }).catch(() => {})));
+  }
+  function taxa1(P, uf) { const g = P[uf] && P[uf].genero; if (!g) return null; let a = 0, b = 0; for (const r of g) { a += r[1]; b += r[2]; } return a ? b / a : null; }
+  function abstencao(k) {
+    const box = el('div', 'proj-abst');
+    box.append(el('h3', null, 'Abstenção'));
+    caixa.append(box);
+    Promise.resolve(AB.perfil).then((P) => {
+      if (!P) return;
+      const uf = k === 'br' ? 'BR' : k.toUpperCase();
+      const v = AB.vivo[k], t1 = taxa1(P, uf);
+      const p = el('p');
+      if (v && v.est) p.append(`Nas seções já apuradas do 2º turno, a abstenção está em `, el('b', null, pct(v.a / v.est)), `. No 1º turno foi de ${pct(t1)}` + (t1 != null ? ` (${v.a / v.est > t1 ? '+' : ''}${((v.a / v.est - t1) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} ponto).` : '.'));
+      else p.append(`A abstenção do 2º turno aparece quando as primeiras seções forem apuradas. No 1º turno foi de ${pct(t1)}${k === 'br' ? ' no Brasil' : ''}.`);
+      box.append(p);
+      if (k === 'br') {
+        const linhas = UFS.map((u) => { const x = AB.vivo[u.toLowerCase()], a1 = taxa1(P, u); return [u, x && x.est ? x.a / x.est : null, a1, x && x.te ? x.est / x.te : 0]; })
+          .sort((a, b) => ((b[1] ?? -1) - (b[2] ?? 0)) - ((a[1] ?? -1) - (a[2] ?? 0)));
+        const t = el('table'); const h = el('tr');
+        for (const x of ['Estado', '2º turno (apurado)', '1º turno', 'Variação', 'Eleitorado apurado']) h.append(el('th', null, x));
+        const tb = el('tbody');
+        for (const [u, a2, a1, f] of linhas) {
+          const tr = el('tr');
+          tr.append(el('td', null, u === 'ZZ' ? 'Exterior' : u), el('td', 'n', pct(a2)), el('td', 'n', pct(a1)), el('td', 'n', a2 == null || a1 == null ? '—' : `${a2 > a1 ? '+' : ''}${((a2 - a1) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} p.p.`), el('td', 'n', pct(f, 0)));
+          tb.append(tr);
+        }
+        const th = el('thead'); th.append(h); t.append(th, tb); const w = el('div', 'tbl'); w.append(t); box.append(w);
+      }
+      // perfil
+      const per = P[uf];
+      if (!per) return;
+      box.append(el('p', 'nota', `Quem se absteve no 1º turno${k === 'br' ? '' : ' em ' + uf}, por perfil. O TSE só publica o perfil depois da eleição; durante a apuração não há essa abertura para o 2º turno.`));
+      const nav = el('div', 'proj-modelos');
+      for (const [d, t] of DIMS) { const b = el('button', null, t); b.type = 'button'; b.setAttribute('aria-pressed', String(d === AB.dim)); b.onclick = () => { AB.dim = d; desenha(); }; nav.append(b); }
+      box.append(nav);
+      let rs = (per[AB.dim] || []).filter((r) => r[1] > 1000 && !/NÃO INFORMADO|Não informado|INVÁLID/i.test(r[0]));
+      if (AB.dim === 'idade') rs.sort((a, b) => parseInt(a[0]) - parseInt(b[0])); else rs.sort((a, b) => b[2] / b[1] - a[2] / a[1]);
+      const max = Math.max(...rs.map((r) => r[2] / r[1]), 0.01);
+      const lista = el('div', 'abst-barras');
+      for (const [lab, ap, ab] of rs) {
+        const l = el('div', 'abst-l'); const bar = el('span', 'abst-b'); bar.style.width = (ab / ap / max) * 100 + '%';
+        l.append(el('span', 'abst-r', AB.dim === 'idade' ? lab : titulo(lab)), (() => { const w = el('span', 'abst-w'); w.append(bar); return w; })(), el('span', 'abst-v', `${pct(ab / ap)} · ${mi(ab)}`));
+        lista.append(l);
+      }
+      box.append(lista);
+    });
+  }
+
   // ---------- mercado de apostas (Polymarket, API pública) ----------
   const PM = { ev: null, hist: {}, int: '1m', t: 0 };
   const INTERVALOS = [['1d', '1 dia', 5], ['1w', '1 semana', 60], ['1m', '1 mês', 360], ['max', 'Tudo', 1440]];
