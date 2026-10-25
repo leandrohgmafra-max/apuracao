@@ -49,6 +49,7 @@
   const ordem = new Map(); // numero -> índice de cor
 
   function cor(n) {
+    const u = window.corUsuario && window.corUsuario(n); if (u) return u;
     if (COR_FIXA[n]) return COR_FIXA[n];
     if (!ordem.has(n)) ordem.set(n, ordem.size);
     return PALETA[ordem.get(n) % PALETA.length];

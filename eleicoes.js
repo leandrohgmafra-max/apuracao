@@ -26,7 +26,7 @@
   const $ = (id) => RAIZ.querySelector('#' + id);
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
   const extra = {};
-  const corPartido = (sg) => COR_PARTIDO[sg] || extra[sg] || (extra[sg] = PALETA[Object.keys(extra).length % PALETA.length]);
+  const corPartido = (sg) => (window.corSigla && window.corSigla(sg)) || COR_PARTIDO[sg] || extra[sg] || (extra[sg] = PALETA[Object.keys(extra).length % PALETA.length]);
   const cache = {};
   const json = (p) => cache[p] || (cache[p] = fetch('data/' + p).then((r) => { if (!r.ok) throw new Error(p); return r.json(); }));
 

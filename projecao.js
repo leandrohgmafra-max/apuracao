@@ -29,16 +29,20 @@
   let caixa = PAINEIS.projecao; // painel que está sendo desenhado
   const ABAS = [['apuracao', 'Apuração'], ['projecao', 'Projeção'], ['apostas', 'Apostas'], ['abstencao', 'Abstenção']];
   let aba = new URLSearchParams(location.search).get('aba') || 'apuracao';
-  const S = { atual: null, serie: [], sha: null, nSerie: -1, corrida: null, modelo: null, idx: null, sim: null, munNome: null, erro: false };
+  const S = { atual: null, serie: [], sha: null, nSerie: -1, corrida: null, modelo: null, idx: null, sim: null, munNome: null, erro: false, semApi: 0 };
   try { S.modelo = localStorage.getItem('proj-modelo'); } catch (e) { /* sem storage */ }
 
   // ---------- dados ----------
   async function baixa() {
     let base = `https://raw.githubusercontent.com/${REPO}/${RAMO}`;
-    try {
-      const r = await fetch(`https://api.github.com/repos/${REPO}/commits/${RAMO}`, { headers: { Accept: 'application/vnd.github.sha' } });
-      if (r.ok) { S.sha = (await r.text()).trim(); base = `https://raw.githubusercontent.com/${REPO}/${S.sha}`; }
-    } catch (e) { /* limite da API: usa o ramo, que pode atrasar alguns minutos */ }
+    // a API do GitHub aceita 60 consultas por hora por IP; ao bater o limite, usa o ramo (pode atrasar alguns minutos) por 10 min
+    if (Date.now() > S.semApi) {
+      try {
+        const r = await fetch(`https://api.github.com/repos/${REPO}/commits/${RAMO}`, { headers: { Accept: 'application/vnd.github.sha' } });
+        if (r.ok) S.sha = (await r.text()).trim(); else { S.sha = null; S.semApi = Date.now() + 600000; }
+      } catch (e) { S.sha = null; S.semApi = Date.now() + 600000; }
+    }
+    if (S.sha) base = `https://raw.githubusercontent.com/${REPO}/${S.sha}`;
     try {
       const p = await (await fetch(base + '/dados/projecao.json', { cache: 'no-cache' })).json();
       S.atual = p; S.erro = false;
@@ -62,7 +66,7 @@
 
   // ---------- desenho ----------
   function nome(c, n) { return titulo((c.nomes && c.nomes[n]) || 'Nº ' + n); }
-  function cor(n, i) { return COR[n] || OUTRAS[i]; }
+  function cor(n, i) { return (window.corUsuario && window.corUsuario(n)) || COR[n] || OUTRAS[i]; }
 
   // ---------- abas (só na apuração ao vivo) ----------
   function trocaAba(a) {
@@ -406,7 +410,7 @@
     const box = el('div', 'proj-apostas');
     box.append(el('h2', null, 'Mercado de apostas · Presidente'));
     const ms = PM.ev.ms.slice(0, 2);
-    const cores = (q) => (/Lula/.test(q) ? COR[13] : /Fl[áa]vio/.test(q) ? COR[22] : OUTRAS[0]);
+    const cores = (q) => (/Lula/.test(q) ? cor(13, 0) : /Fl[áa]vio/.test(q) ? cor(22, 1) : OUTRAS[0]);
     const lin = el('div', 'proj-placar');
     ms.forEach((m) => {
       const d = el('div', 'proj-cand'); d.style.setProperty('--c', cores(m.q));

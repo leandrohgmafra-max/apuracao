@@ -43,7 +43,7 @@
     cands.sort((a, b) => b.v - a.v);
     return { cands, validos: +d.v.vv, aptos: +d.e.te, secoes: +d.s.ts, st: +d.s.st, hora: d.dg + ' ' + d.hg };
   }
-  const cor = (n) => S.cor[S.uf + n] || '#888';
+  const cor = (n) => (window.corUsuario && window.corUsuario(n)) || S.cor[S.uf + n] || '#888';
   function fixaCores(r) {
     // cor pela ordem do estado na primeira leitura, para não trocar de cor quando a liderança muda
     [...r.cands].sort((a, b) => a.n - b.n).forEach((c, i) => { if (!S.cor[S.uf + c.n]) S.cor[S.uf + c.n] = PALETA[i % PALETA.length]; });
