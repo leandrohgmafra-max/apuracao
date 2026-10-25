@@ -1,0 +1,16 @@
+name = "apuracao-mural"
+main = "worker.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+
+# SHA-256 da senha do painel (admin.html). A senha não fica no repositório; o hash sozinho não serve para entrar.
+[vars]
+ADMIN_HASH = "e754c5ed5d2bfbf9d2eb4ad9ebda3aa31d5e758dc9fd57cb0780dd9ee81f2d03"
+
+[[durable_objects.bindings]]
+name = "MURAL"
+class_name = "Mural"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Mural"]

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel do mural</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; connect-src https://apuracao-mural.leandrohgmafra.workers.dev; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<main>
+  <h1>Painel do mural</h1>
+  <form id="entrar">
+    <label>Senha do painel <input type="password" id="senha" autocomplete="current-password" required></label>
+    <label class="linha"><input type="checkbox" id="lembrar"> Lembrar neste aparelho</label>
+    <button type="submit">Entrar</button>
+    <p class="erro" id="erro-entrar" role="alert"></p>
+  </form>
+
+  <div id="painel" hidden>
+    <p class="barra"><span id="resumo">…</span> <button type="button" id="atualiza">Atualizar</button> <button type="button" id="notif">Avisar neste navegador</button> <button type="button" id="sair">Sair</button></p>
+    <p class="erro" id="erro" role="alert"></p>
+
+    <h2>Esperando aprovação</h2>
+    <p class="dica">Mensagem com <b>FIXAR R$ 10</b>: confira no app do banco se chegou um PIX de R$ 10,00 com o código mostrado (aparece como identificador da transação). Se não chegou, use "Aprovar sem fixar" ou "Recusar". Se recusar uma que já pagou, devolva o PIX pelo app do banco.</p>
+    <div id="pendentes" class="lista"></div>
+
+    <h2>No ar</h2>
+    <div id="noar" class="lista"></div>
+
+    <h2>Subir patrocínio</h2>
+    <p class="dica">Só lojas e empresas, nada de candidato, partido ou propaganda eleitoral. A imagem é reduzida para no máximo 600 px e convertida neste navegador antes de subir (PNG, JPG ou WebP; SVG não). Aparece na hora nas laterais (no celular, numa faixa abaixo dos filtros).</p>
+    <form id="patro">
+      <label>Nome da empresa <input name="nome" maxlength="40" required></label>
+      <label>Link (opcional, https://) <input name="link" type="url" maxlength="200" placeholder="https://"></label>
+      <label>Imagem <input name="img" type="file" accept="image/png,image/jpeg,image/webp" required></label>
+      <img id="previa" alt="" hidden>
+      <button type="submit">Publicar patrocínio</button>
+      <p class="erro" id="erro-patro" role="alert"></p>
+    </form>
+
+    <h2>Aviso no celular</h2>
+    <p class="dica">Para receber um aviso no celular a cada pedido novo: instale o app <b>ntfy</b> (Android ou iPhone), toque em "Gerar tópico", copie o nome e assine esse tópico no app. O aviso só diz que há pedido novo e o código; o texto da mensagem não sai daqui.</p>
+    <form id="cfg">
+      <label>Tópico do ntfy <input name="ntfy" maxlength="64" pattern="[A-Za-z0-9_\-]{16,64}"></label>
+      <button type="button" id="gera">Gerar tópico</button>
+      <button type="submit">Salvar e mandar teste</button>
+      <p class="erro" id="erro-cfg" role="alert"></p>
+    </form>
+  </div>
+</main>
+<script src="admin.js"></script>
+</body>
+</html>
