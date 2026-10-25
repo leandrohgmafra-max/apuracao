@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Eleições no Brasil</title>
 <meta name="description" content="Apuração de 2026 ao vivo e todas as eleições desde 1998, com dados do TSE: presidente, governador, senador, deputados, prefeito e vereador, até a zona eleitoral e o local de votação.">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-zb4vzIVCrIP5r2m8M6G0yKXEBzDsAF/o5TjcFEiXAbY='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' wss://apuracao-contador.leandrohgmafra.workers.dev https://resultados.tse.jus.br https://api.github.com https://raw.githubusercontent.com https://gamma-api.polymarket.com https://clob.polymarket.com https://tiles.openfreemap.org; worker-src 'self' blob:; child-src blob:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-zb4vzIVCrIP5r2m8M6G0yKXEBzDsAF/o5TjcFEiXAbY='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://apuracao-mural.leandrohgmafra.workers.dev; connect-src 'self' wss://apuracao-contador.leandrohgmafra.workers.dev https://apuracao-mural.leandrohgmafra.workers.dev https://resultados.tse.jus.br https://api.github.com https://raw.githubusercontent.com https://gamma-api.polymarket.com https://clob.polymarket.com https://tiles.openfreemap.org; worker-src 'self' blob:; child-src blob:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <script>if(top!==self){document.documentElement.style.display='none';try{top.location.replace(location.href)}catch(e){}}var t=null;try{t=localStorage.getItem('tema');}catch(e){}document.documentElement.dataset.theme=t||'brasil';</script>
 <meta property="og:type" content="website">
@@ -40,6 +40,7 @@
       <div class="busca-slot" id="busca-slot"></div>
       <button type="button" class="pix-topo" data-apoie aria-label="Apoie o projeto: faça um PIX (abre o QR Code)"><img src="pix.svg" alt="" width="52" height="52"><span><b>Apoie o projeto</b>Faça um PIX</span></button>
       <span class="vendo" id="vendo" hidden role="status"><i class="pulso" aria-hidden="true"></i><span aria-hidden="true">👁</span> <b class="n"></b><span class="r"> pessoas vendo agora</span><span class="c" aria-hidden="true"> online</span></span>
+      <button type="button" class="tema" data-mural-ir aria-label="Mural de mensagens"><span aria-hidden="true">💬</span><span class="rot"> Mural</span></button>
       <button type="button" class="tema" id="compartilha" aria-haspopup="true" aria-label="Compartilhar"><span aria-hidden="true">↗</span><span class="rot"> Compartilhar</span></button>
       <button type="button" class="tema" id="cores-bt" aria-label="Cores e tema"><span aria-hidden="true">🎨</span><span class="rot"> Cores</span></button>
       <button type="button" id="tema" hidden></button>
@@ -151,6 +152,15 @@
     </section>
   </div>
 
+  <section class="card mural" id="mural" aria-labelledby="mural-tit">
+    <div class="mural-topo">
+      <h2 id="mural-tit">Mural</h2>
+      <button type="button" class="tema mural-bt" data-mural>✍ Escrever no mural</button>
+    </div>
+    <p class="nota">Deixe seu recado. Toda mensagem passa por aprovação antes de aparecer. Nada de propaganda eleitoral.</p>
+    <div class="mural-lista" aria-live="polite"><p class="nota">Carregando…</p></div>
+  </section>
+
   <footer class="rodape">
     <p class="rodape-apoie">Gostou? Este site é independente e gratuito. <button type="button" class="link" data-apoie>Apoie com PIX</button>.</p>
     <p>Fonte: Tribunal Superior Eleitoral. 2º turno de 2026 (presidente e governador) lido ao vivo de resultados.tse.jus.br pelo seu navegador a cada 15 segundos. Demais eleições, municípios, zonas, locais de votação e fotos: Portal de Dados Abertos do TSE.</p>
@@ -173,6 +183,40 @@
   <p class="aviso-links"><a href="https://resultados.tse.jus.br/oficial/app/index.html" target="_blank" rel="noopener">Resultados oficiais no site do TSE ↗</a><a href="https://www.poder360.com.br/integras/leia-a-integra-da-decisao-de-zanin-que-prorroga-votacao-ate-as-19h/" target="_blank" rel="noopener">Íntegra da decisão ↗</a></p>
   <div class="pix-acoes"><button type="button" class="tema" id="aviso-ok">Entendi</button><button type="button" class="tema" id="aviso-nunca">Não mostrar mais</button></div>
 </dialog>
+<dialog class="pix mural-d" id="mural-d" aria-labelledby="mural-d-tit">
+  <h2 id="mural-d-tit">Escrever no mural</h2>
+  <form novalidate>
+    <label>Seu nome ou apelido <small>(opcional)</small><input name="nome" maxlength="40" autocomplete="nickname"></label>
+    <label>Mensagem<textarea name="texto" maxlength="280" rows="4" required></textarea><small class="mural-conta">0/280</small></label>
+    <label class="mural-isca" aria-hidden="true">Não preencha<input name="site" tabindex="-1" autocomplete="off"></label>
+    <label class="mural-check"><input type="checkbox" name="fixar"> <span><b>Fixar no topo do mural por R$ 10</b> (PIX). A mensagem fica no topo depois que o pagamento for conferido e ela for aprovada.</span></label>
+    <details class="mural-regras" open>
+      <summary>Regras</summary>
+      <ul>
+        <li><b>Proibida propaganda eleitoral:</b> pedir voto, falar a favor ou contra candidato, partido, federação ou coligação. A lei proíbe propaganda eleitoral paga na internet (Lei 9.504/97, art. 57-C).</li>
+        <li>Proibidos ofensas, discurso de ódio, notícias falsas, golpes, links, telefones e dados pessoais.</li>
+        <li>Toda mensagem é lida antes de ir ao ar e pode ser recusada ou removida a qualquer momento.</li>
+        <li>Pagar não garante a aprovação. Se a mensagem fixada for recusada, o PIX é devolvido integralmente.</li>
+        <li>Guardamos só o que você escreve. Seu IP não é guardado: vira um código embaralhado, apagado em 1 hora, só para limitar envios repetidos.</li>
+      </ul>
+    </details>
+    <label class="mural-check"><input type="checkbox" name="aceito" required> <span>Li e aceito as regras.</span></label>
+    <p class="mural-erro" role="alert"></p>
+    <div class="pix-acoes"><button type="submit" class="tema mural-envia">Enviar para aprovação</button><button type="button" class="tema mural-fecha">Cancelar</button></div>
+  </form>
+  <div class="mural-ok" hidden>
+    <p><b>Mensagem recebida.</b> Ela aparece no mural assim que for aprovada.</p>
+    <div class="pix-acoes"><button type="button" class="tema mural-fecha">Fechar</button></div>
+  </div>
+  <div class="mural-pix" hidden>
+    <p><b>Mensagem recebida.</b> Para fixá-la, pague <b class="mural-valor"></b> pelo PIX abaixo. O código <b class="mural-ref"></b> já vai no PIX e identifica o seu pedido; anote-o.</p>
+    <div class="mural-qr"></div>
+    <p class="pix-nome">Leandro Henrique Goncalve · São Paulo</p>
+    <textarea readonly rows="3" aria-label="Código PIX copia e cola"></textarea>
+    <p class="nota">Depois que o pagamento for conferido e a mensagem aprovada, ela aparece fixada no topo. Se for recusada, o valor é devolvido.</p>
+    <div class="pix-acoes"><button type="button" class="tema mural-copia">Copiar código PIX</button><button type="button" class="tema mural-fecha">Fechar</button></div>
+  </div>
+</dialog>
 <button type="button" class="pix-flutua" data-apoie aria-label="Apoie o projeto: faça um PIX">♥ Faça um PIX</button>
 <dialog class="pix" id="pix" aria-labelledby="pix-tit">
   <h2 id="pix-tit">Apoie o site</h2>
@@ -194,5 +238,7 @@
 <script src="projecao.js"></script>
 <script src="apoie.js"></script>
 <script src="busca.js"></script>
+<script src="vendor/qrcode-generator.js"></script>
+<script src="mural.js"></script>
 </body>
 </html>

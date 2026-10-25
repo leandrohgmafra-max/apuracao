@@ -322,3 +322,49 @@ h1 .home:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 .aviso-selo { display: inline-block; font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: #fff; background: var(--live); padding: 4px 10px; border-radius: 999px; }
 .aviso-links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
 .aviso-links a { color: var(--accent); font-weight: 600; }
+
+/* ---------- mural de mensagens ---------- */
+.mural { display: grid; gap: 10px; scroll-margin-top: 80px; }
+.mural-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.mural-topo h2 { margin: 0; }
+.mural-bt { min-height: 44px; padding-inline: 16px; font-weight: 600; border-color: var(--accent); color: var(--accent); }
+.mural-lista { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); max-height: 520px; overflow: auto; }
+.mural-msg { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg); min-width: 0; }
+.mural-msg.fixada { border: 2px solid var(--accent); background: var(--surface); grid-column: 1 / -1; }
+.mural-cab { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin: 0 0 4px; font-size: 13px; }
+.mural-cab time { color: var(--muted); font-size: 12px; margin-left: auto; font-variant-numeric: tabular-nums; }
+.mural-selo { font-weight: 700; color: var(--accent); }
+.mural-txt { margin: 0; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.45; }
+dialog.mural-d { max-width: min(480px, calc(100vw - 32px)); text-align: left; }
+.mural-d [hidden] { display: none !important; }
+.mural-d form { display: grid; gap: 10px; }
+.mural-d label { display: grid; gap: 4px; font-size: .9rem; font-weight: 600; }
+.mural-d label small { font-weight: 400; color: var(--muted); }
+.mural-d input:not([type="checkbox"]), .mural-d form textarea { font: inherit; font-weight: 400; width: 100%; box-sizing: border-box; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+.mural-d form textarea { font-family: inherit; font-size: 1rem; resize: vertical; }
+.mural-d .mural-conta { justify-self: end; }
+.mural-d .mural-check { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; }
+.mural-d .mural-check input { width: 20px; height: 20px; margin: 1px 0 0; flex: none; }
+.mural-isca { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.mural-regras { font-size: .82rem; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+.mural-regras summary { font-weight: 600; cursor: pointer; }
+.mural-regras ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.mural-erro { color: var(--live); font-weight: 600; margin: 0; min-height: 1em; }
+.mural-qr svg { display: block; width: 220px; height: 220px; margin: 10px auto; border-radius: 8px; }
+.mural-pix, .mural-ok { text-align: center; }
+
+/* ---------- patrocínio: laterais no computador largo, faixa no resto ---------- */
+.patro-rot { margin: 0; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-align: center; }
+.patro img { display: block; width: 100%; height: auto; border-radius: 8px; background: #fff; }
+.patro a { display: block; }
+.patro.lat { display: none; }
+.patro.faixa { display: flex; align-items: center; gap: 10px; overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; }
+.patro.faixa > a, .patro.faixa > img { flex: none; }
+.patro.faixa img { height: 48px; width: auto; max-width: 160px; object-fit: contain; }
+@media (min-width: 1280px) {
+  body.com-patro .wrap { max-width: min(1400px, calc(100vw - 2 * 184px)); }
+  .patro.faixa { display: none; }
+  .patro.lat { display: grid; gap: 10px; align-content: start; position: fixed; top: 96px; width: 152px; max-height: calc(100vh - 120px); overflow-y: auto; z-index: 5; }
+  .patro.lat.esq { left: max(16px, calc((100vw - 1400px) / 2 - 168px)); }
+  .patro.lat.dir { right: max(16px, calc((100vw - 1400px) / 2 - 168px)); }
+}
