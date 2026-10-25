@@ -1,0 +1,14 @@
+name: teste-tse
+on:
+  push:
+    branches: [ao-vivo]
+    paths: ['.github/workflows/teste.yml']
+permissions:
+  contents: write
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -s -o /dev/null -w 'br %{http_code} %{time_total}\n' https://resultados.tse.jus.br/oficial/ele2026/6258/dados/br/br-c0001-e006258-u.json
+          curl -s -o /dev/null -w 'cs %{http_code} %{size_download}\n' --compressed https://resultados.tse.jus.br/oficial/ele2026/arquivo-urna/3220/config/ac/ac-p003220-cs.json
