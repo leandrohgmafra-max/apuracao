@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Eleições no Brasil</title>
 <meta name="description" content="Apuração de 2026 ao vivo e todas as eleições desde 1998, com dados do TSE: presidente, governador, senador, deputados, prefeito e vereador, até a zona eleitoral e o local de votação.">
-<script>try{var t=localStorage.getItem('tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-KohotwxWxTT4pEbTWzc8k5yzr9J3IGDmtKNikqrFD5c='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://resultados.tse.jus.br https://api.github.com https://raw.githubusercontent.com https://gamma-api.polymarket.com https://clob.polymarket.com https://tiles.openfreemap.org; worker-src 'self' blob:; child-src blob:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<script>if(top!==self){document.documentElement.style.display='none';try{top.location.replace(location.href)}catch(e){}}try{var t=localStorage.getItem('tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://leandrohgmafra-max.github.io/apuracao/">
 <meta property="og:title" content="Apuração 2026 · 2º turno ao vivo">
@@ -21,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="vendor/maplibre-gl.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -159,7 +161,7 @@
   <textarea id="pix-cod" readonly rows="3" aria-label="Código PIX copia e cola">00020101021126580014BR.GOV.BCB.PIX0136f9ae59ed-8fcb-4dce-95bd-372a6102edf05204000053039865802BR5925Leandro Henrique Goncalve6009SAO PAULO62080504daqr630491F8</textarea>
   <div class="pix-acoes"><button type="button" class="tema" id="pix-copia">Copiar código PIX</button><button type="button" class="tema" id="pix-fecha">Fechar</button></div>
 </dialog>
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="vendor/maplibre-gl.js"></script>
 <script src="app.js"></script>
 <script src="governador.js"></script>
 <script src="eleicoes.js"></script>

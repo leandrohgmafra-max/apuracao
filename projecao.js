@@ -393,7 +393,7 @@
       PM.ev = { ms, vol: +d[0].volume };
       const [, , fid] = INTERVALOS.find((x) => x[0] === PM.int);
       await Promise.all(ms.slice(0, 2).map(async (m) => {
-        const h = await (await fetch(`https://clob.polymarket.com/prices-history?market=${m.tok}&interval=${PM.int}&fidelity=${fid}`)).json();
+        const h = await (await fetch(`https://clob.polymarket.com/prices-history?market=${encodeURIComponent(m.tok)}&interval=${PM.int}&fidelity=${fid}`)).json();
         PM.hist[m.tok + PM.int] = h.history || [];
       }));
       PM.t = Date.now();
