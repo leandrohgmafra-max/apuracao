@@ -398,3 +398,10 @@ dialog.mural-d { max-width: min(480px, calc(100vw - 32px)); text-align: left; }
   .pix-flutua.rolando { opacity: 0; transform: translateY(16px); pointer-events: none; }
   body { padding-bottom: 72px; }
 }
+.modos { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+.modos button { font: inherit; font-size: 13px; font-weight: 600; min-height: 34px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.modos button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.modos button.giro { color: var(--muted); font-weight: 500; }
+.modos button.giro[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); }
+.modos button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (pointer: coarse) { .modos button { min-height: 44px; } }

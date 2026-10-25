@@ -45,6 +45,7 @@
     cidades: [], ufsGeo: null, mundoGeo: null, ufBox: {},
     evol: [],
     foco: null,         // número do candidato em análise (clique no placar)
+    modo: 'lider',      // cor do mapa: 'lider', 'apur' ou o número de um candidato
   };
   const ordem = new Map(); // numero -> índice de cor
 
@@ -352,7 +353,7 @@
       mapa.addLayer({ id: 'zonas-line', type: 'line', source: 'zonas', minzoom: 8.5, paint: { 'line-color': ESCURO ? '#eceae4' : '#1b1d22', 'line-width': 1, 'line-dasharray': [2, 1.5], 'line-opacity': 0.7 } });
       mapa.addLayer({ id: 'zonas-rot', type: 'symbol', source: 'zonas', minzoom: 10, layout: { 'text-field': ['concat', 'Zona ', ['to-string', ['get', 'zona']]], 'text-size': 11, 'text-font': ['Noto Sans Regular'] }, paint: { 'text-color': ESCURO ? '#eceae4' : '#1b1d22', 'text-halo-color': ESCURO ? '#121417' : '#ffffff', 'text-halo-width': 1.2 } });
       mapa.addLayer({ id: 'locais-pt', type: 'circle', source: 'locais', minzoom: 10.5, paint: { 'circle-color': ['coalesce', ['get', 'cor'], '#888'], 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.5, ['*', 0.6, ['get', 'r']], 15, ['*', 1.6, ['get', 'r']]], 'circle-stroke-color': ['case', ['==', ['get', 'sel'], 1], '#ffd400', ESCURO ? '#121417' : '#ffffff'], 'circle-stroke-width': ['case', ['==', ['get', 'sel'], 1], 4, 1], 'circle-opacity': ['coalesce', ['get', 'op'], 0.9], 'circle-stroke-opacity': ['case', ['==', ['get', 'sel'], 1], 1, ['coalesce', ['get', 'op'], 0.9]] } });
-      mapa.addLayer({ id: 'cidades-pt', type: 'circle', source: 'cidades', paint: { 'circle-color': ['coalesce', ['get', 'cor'], '#888'], 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, ['get', 'r'], 8, ['*', 2, ['get', 'r']]], 'circle-stroke-color': ESCURO ? '#121417' : '#ffffff', 'circle-stroke-width': 1 } });
+      mapa.addLayer({ id: 'cidades-pt', type: 'circle', source: 'cidades', paint: { 'circle-color': ['coalesce', ['get', 'cor'], '#888'], 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, ['get', 'r'], 8, ['*', 2, ['get', 'r']]], 'circle-opacity': ['coalesce', ['get', 'op'], 1], 'circle-stroke-color': ESCURO ? '#121417' : '#ffffff', 'circle-stroke-width': 1 } });
       mapa.addLayer({ id: 'sel-line', type: 'line', source: 'sel', paint: { 'line-color': ESCURO ? '#ffffff' : '#111111', 'line-width': 2.5 } });
 
       mapa.addLayer({ id: 'locais-sel', type: 'circle', source: 'locais', minzoom: 10.5, filter: ['==', ['get', 'sel'], 1], paint: { 'circle-color': ['get', 'cor'], 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.5, ['*', 1.2, ['get', 'r']], 15, ['*', 3, ['get', 'r']]], 'circle-stroke-color': '#ffd400', 'circle-stroke-width': 4 } });
@@ -422,7 +423,42 @@
       const p = (l.votos[S.foco] || 0) / l.validos;
       return { cor: cor(S.foco), op: Math.max(0.04, Math.min(0.95, (p - 0.1) * 1.6)) };
     }
+    if (S.modo === 'apur') { const a = apurado(l); return a == null ? { cor: null, op: 0 } : { cor: COR_APUR, op: 0.06 + 0.86 * a }; }
+    if (typeof S.modo === 'number') {  // fatia do candidato escolhido nos válidos, escala de 20% a 80%
+      if (!l || !l.validos) return { cor: null, op: 0 };
+      const p = (l.votos[S.modo] || 0) / l.validos;
+      return { cor: cor(S.modo), op: Math.max(0.04, Math.min(0.95, (p - 0.2) * 1.55)) };
+    }
     const L = lider(l); return L ? { cor: cor(L.n), op: Math.max(0.3, Math.min(0.92, 0.3 + (L.p - 0.4) * 1.9)) } : { cor: null, op: 0 };
+  }
+  const COR_APUR = '#7b4fb8';
+  // modos de cor do mapa disponíveis na eleição aberta: líder, % apurado (só ao vivo) e os dois primeiros colocados
+  const modosMapa = () => ['lider', ...(S.el === AO_VIVO ? ['apur'] : []), ...ranking(res('brasil')).slice(0, 2).map((c) => c.n)];
+  let giro = null;
+  function trocaModo(m, manual) {
+    if (manual && giro) { clearInterval(giro); giro = null; }
+    S.modo = m;
+    if (S.foco) focaCandidato(null); else pinta();
+  }
+  function alternaGiro() {
+    if (giro) { clearInterval(giro); giro = null; legenda(); return; }
+    giro = setInterval(() => { const ms = modosMapa(); trocaModo(ms[(ms.indexOf(S.modo) + 1) % ms.length]); }, 6000);
+    legenda();
+  }
+  let chaveModos = '';
+  function botoesModo() {
+    const box = $('modos'); if (!box) return;
+    const ms = modosMapa();
+    if (!ms.includes(S.modo)) S.modo = 'lider';
+    const rot = (m) => (m === 'lider' ? 'Quem lidera' : m === 'apur' ? '% apurado' : '% ' + nomeCand(m).split(' ')[0]);
+    const chave = ms.map(rot).join('|') + '|' + !!giro;
+    if (chave !== chaveModos) {
+      chaveModos = chave;
+      const bs = ms.map((m) => { const b = el('button', null, rot(m)); b.type = 'button'; b.dataset.modo = m; b.onclick = () => trocaModo(m, true); return b; });
+      const g = el('button', 'giro', giro ? '⏸ Parar alternância' : '▶ Alternar automaticamente'); g.type = 'button'; g.setAttribute('aria-pressed', String(!!giro)); g.onclick = alternaGiro;
+      box.replaceChildren(...bs, g);
+    }
+    for (const b of box.querySelectorAll('button[data-modo]')) b.setAttribute('aria-pressed', String(!S.foco && String(S.modo) === b.dataset.modo));
   }
   // ao vivo sem nenhuma seção apurada, a análise de candidato usa o 1º turno de 2026
   const usaT1 = () => S.foco && S.el === AO_VIVO && !(S.live.br && S.live.br.st);
@@ -431,8 +467,8 @@
     if (!mapa || !mapa.getSource('cidades')) return;
     mapa.getSource('cidades').setData({ type: 'FeatureCollection', features: S.cidades.map((c) => {
       const l = res('cidade', c.cod);
-      const L = lider(l);
-      return { type: 'Feature', properties: { cod: c.cod, nome: c.nome, pais: c.pais, iso: c.iso, cor: L ? cor(L.n) : (ESCURO ? '#666' : '#9aa0a6'), r: Math.max(3, Math.min(9, Math.sqrt((l && l.aptos) || 400) / 16)), tem: l ? 1 : 0 }, geometry: { type: 'Point', coordinates: [c.lon, c.lat] } };
+      const co = corOp(l), lid = !S.foco && S.modo === 'lider';
+      return { type: 'Feature', properties: { cod: c.cod, nome: c.nome, pais: c.pais, iso: c.iso, cor: co.cor || (ESCURO ? '#666' : '#9aa0a6'), op: !co.cor || lid ? 1 : Math.max(0.25, co.op), r: Math.max(3, Math.min(9, Math.sqrt((l && l.aptos) || 400) / 16)), tem: l ? 1 : 0 }, geometry: { type: 'Point', coordinates: [c.lon, c.lat] } };
     }).filter((f) => f.properties.tem || S.el === AO_VIVO) });
   }
 
@@ -465,7 +501,9 @@
             let v = Object.fromEntries(Object.entries(l.t1).map(([k, x]) => [k.slice(1), x]));
             if (el0 === AO_VIVO && !S.foco) v = { 13: v[13] || 0, 22: v[22] || 0 };
             const val = Object.entries(v).filter(([k]) => k !== '95' && k !== '96').reduce((a, [, x]) => a + x, 0);
-            if (S.foco) { c = cor(S.foco); op = Math.max(0.12, Math.min(1, ((v[S.foco] || 0) / (val || 1) - 0.1) * 1.8)); }
+            const fn = S.foco || (typeof S.modo === 'number' ? S.modo : null);
+            if (fn) { c = cor(fn); op = Math.max(0.12, Math.min(1, ((v[fn] || 0) / (val || 1) - 0.1) * 1.8)); }
+            else if (S.modo === 'apur') { op = 0.5; }
             else { const L = lider({ votos: v, validos: val || 1 }); if (L) { c = cor(L.n); op = Math.max(0.45, Math.min(1, 0.45 + (L.p - 0.5) * 2.5)); } }
           }
           const ehSel = S.sel.nivel === 'local' && S.sel.cod === `${l.cod}|${l.zona}|${l.local}`;
@@ -493,6 +531,10 @@
 
   function legenda() {
     const leg0 = $('legenda');
+    botoesModo();
+    const grad = (c, a, b, extra) => { const s = el('span', 'leg-foco'); const g = el('i', 'grad'); g.style.background = `linear-gradient(90deg, transparent, ${c})`; s.append(document.createTextNode(a), g, document.createTextNode(b)); leg0.replaceChildren(s, ...(extra ? [el('span', null, extra)] : [])); };
+    if (!S.foco && S.modo === 'apur') return grad(COR_APUR, 'Seções apuradas: 0%', '100%', 'Cinza = sem dados ainda');
+    if (!S.foco && typeof S.modo === 'number') return grad(cor(S.modo), 'Votos de ' + nomeCand(S.modo) + ': 20%', '80%+', 'Nos votos válidos');
     if (S.foco) {
       const s = el('span', 'leg-foco'); const g = el('i', 'grad'); g.style.background = `linear-gradient(90deg, transparent, ${cor(S.foco)})`;
       s.append(document.createTextNode('Fatia de ' + nomeCand(S.foco) + ': 10%'), g, document.createTextNode('70%+' + (usaT1() ? ' · 1º turno de 2026, até sair a 1ª divulgação' : '')));
@@ -506,7 +548,14 @@
   }
 
   function dica(layer, p) {
-    const lin = (l) => { const L = lider(l); return L ? `${nomeCand(L.n)} ${pct(L.p)}` + (l.secoes && l.st < l.secoes ? ` · ${pct(l.st / l.secoes, 0)} apurado` : '') : l ? 'Sem votos apurados' : 'Sem dados'; };
+    const lin = (l) => {
+      if (!l) return 'Sem dados';
+      const ap = l.secoes && l.st < l.secoes ? ` · ${pct(l.st / l.secoes, 0)} apurado` : '';
+      if (!S.foco && S.modo === 'apur') return l.secoes ? `${pct(l.st / l.secoes, 1)} das seções apuradas` : 'Apuração completa';
+      const n = !S.foco && typeof S.modo === 'number' ? S.modo : null;
+      if (n) return l.validos ? `${nomeCand(n)} ${pct((l.votos[n] || 0) / l.validos)}${ap}` : 'Sem votos apurados';
+      const L = lider(l); return L ? `${nomeCand(L.n)} ${pct(L.p)}${ap}` : 'Sem votos apurados';
+    };
     if (layer === 'paises-fill') { if (p.id === '76') return null; const l = res('pais', p.id); return [p.nome, l ? lin(l) : 'Sem seção eleitoral brasileira']; }
     if (layer === 'ufs-fill') return [UF_NOME[p.uf], lin(res('uf', p.uf))];
     if (layer === 'mun-fill') return [p.nome + ' (' + p.uf + ')', lin(res('mun', p.cod))];
