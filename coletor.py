@@ -64,7 +64,8 @@ def le_u(d):
                 votos[c['n']] = int(c['vap'] or 0)
     nomes = {c['n']: c['nmu'] for a in d['carg'][0]['agr'] for p in a['par'] for c in p['cand']}
     return {'v': votos, 'nomes': nomes, 'vv': int(d['v']['vv'] or 0), 'st': int(d['s']['st'] or 0), 'ts': int(d['s']['ts'] or 0),
-            'te': int(d['e']['te'] or 0), 'est': int(d['e'].get('est') or 0), 'hora': d.get('dg', '') + ' ' + d.get('hg', '')}
+            'te': int(d['e']['te'] or 0), 'est': int(d['e'].get('est') or 0), 'hora': d.get('dg', '') + ' ' + d.get('hg', ''),
+            'c': int(d['e'].get('c') or 0), 'vb': int(d['v'].get('vb') or 0), 'vn': int(d['v'].get('tvn') or 0)}
 
 
 def url_u(el, uf, mun=''):
@@ -265,6 +266,7 @@ class Coletor:
         BASE_SEC.update(BASE_SEC_)
         self.cfg = {}
         self.mun = {PRES: {}, GOV: {}}      # el -> mun -> leitura do u
+        self.mun_txt = {}                   # uf -> último arquivo gravado em dados/mun
         self.ab = {PRES: {}, GOV: {}}       # el -> mun -> (st, ts, te, est)
         self.ultimo_st = {PRES: {}, GOV: {}}
         self.cs_t = 0
@@ -440,6 +442,25 @@ class Coletor:
         est['n_serie'] = len(self.serie)
         json.dump(est, open(os.path.join(SAIDA, 'projecao.json'), 'w'), ensure_ascii=False, separators=(',', ':'))
         json.dump(self.serie, open(os.path.join(SAIDA, 'serie.json'), 'w'), ensure_ascii=False, separators=(',', ':'))
+        self.grava_mun()
+
+    def grava_mun(self):
+        """Resultado do presidente por município, um arquivo por UF, para o mapa do site não ter de buscar centenas de arquivos no TSE.
+        Cada município: [seções totalizadas, seções, eleitores, comparecimento, brancos, nulos, {número: votos}, hora]."""
+        pasta = os.path.join(SAIDA, 'mun'); os.makedirs(pasta, exist_ok=True)
+        for uf, mus in self.cfg.get(PRES, {}).items():
+            out = {}
+            for m in mus:
+                r = self.mun[PRES].get(m)
+                if r and r.get('st'):
+                    out[m] = [r['st'], r['ts'], r['te'], r.get('c', 0), r.get('vb', 0), r.get('vn', 0), r['v'], r['hora']]
+            if not out:
+                continue
+            txt = json.dumps(out, ensure_ascii=False, separators=(',', ':'), sort_keys=True)
+            if self.mun_txt.get(uf) == txt:
+                continue
+            self.mun_txt[uf] = txt
+            open(os.path.join(pasta, uf + '.json'), 'w').write(txt)
 
 
 def publica(msg):
