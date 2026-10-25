@@ -185,14 +185,14 @@ def projeta(unidades, A, B, modelos, total_st, total_ts):
             A1 += R * p; V1 += R; Rt += R
             fr = 1 - (u['est'] / u['te'] if u['te'] else 0)
             var_i += R * R * s * s * fr
-            g = por_g[u['grupo']]; g[0] += R; g[1] += R * p
+            g = por_g[u.get('rot', u['grupo'])]; g[0] += R; g[1] += R * p
         p = A1 / V1 if V1 else 0.5
         fr_rest = Rt / V1 if V1 else 1
         sis = PRIOR[m] * fr_rest + 0.04 * fr_rest ** 4
         sig = math.sqrt(var_i / V1 ** 2 + sis ** 2) if V1 else 0.1
         ch = phi((p - 0.5) / sig) if sig > 1e-9 else (1.0 if p > 0.5 else 0.0 if p < 0.5 else 0.5)
         out[m] = {'p': round(p, 5), 'lo': round(max(0, p - 1.96 * sig), 5), 'hi': round(min(1, p + 1.96 * sig), 5), 'ch': round(ch, 4),
-                  'va': round(A1), 'vb': round(V1 - A1), 'R': round(Rt), 's': round(s, 4),
+                  'va': round(A1), 'vb': round(V1 - A1), 'R': round(Rt), 's': round(s, 4), 'sg': round(sig, 5),
                   'onde': sorted([[g, round(r), round(ra / r, 4)] for g, (r, ra) in por_g.items() if r > 0], key=lambda x: -x[1])[:12]}
     lead = A0 - B0
     return {'a': A0, 'b': B0, 'vv': V0, 'st': total_st, 'ts': total_ts, 'A': A, 'B': B, 'lead': lead, 'm': out}
@@ -397,7 +397,7 @@ class Coletor:
             modelos = ['simples', 'mun', 't1']
             # no governador o grupo é a microrregião não disponível; usa o estado inteiro como grupo
             for u in us:
-                u['grupo'] = u['uf']
+                u['grupo'] = u['uf']; u['rot'] = u['cod']
         res = projeta(us, A, B, modelos, topo['st'], topo['ts'])
         res['nomes'] = {A: topo['nomes'].get(A, A), B: topo['nomes'].get(B, B)}
         res['hora'] = topo['hora']
