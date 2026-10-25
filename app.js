@@ -84,7 +84,7 @@
   function deTSE(d) {
     const votos = {}, nomes = {};
     for (const a of d.carg[0].agr) for (const p of a.par) for (const c of p.cand) { votos[c.n] = +c.vap || 0; nomes[c.n] = { nome: titulo(c.nmu), partido: p.sg }; }
-    return { votos, nomes, validos: +d.v.vv, aptos: +d.e.te, comparecimento: +d.e.c, brancos: +d.v.vb, nulos: +d.v.tvn, secoes: +d.s.ts, st: +d.s.st, hora: d.dg + ' ' + d.hg };
+    return { votos, nomes, validos: +d.v.vv, aptos: +d.e.te, comparecimento: +d.e.c, brancos: +d.v.vb, nulos: +d.v.tvn, secoes: +d.s.ts, st: +d.s.st, est: +d.e.est || 0, abst: +d.e.a || 0, hora: d.dg + ' ' + d.hg };
   }
   function deLinhaLarga(r) {
     const votos = {};
@@ -92,10 +92,10 @@
     return { votos, validos: r.validos || 0, aptos: r.aptos, comparecimento: r.comparecimento, brancos: r.brancos, nulos: r.nulos, secoes: r.secoes, st: r.secoes_totalizadas ?? r.secoes, nome: r.nome };
   }
   function soma(ls) {
-    const t = { votos: {}, validos: 0, aptos: 0, comparecimento: 0, brancos: 0, nulos: 0, secoes: 0, st: 0 };
+    const t = { votos: {}, validos: 0, aptos: 0, comparecimento: 0, brancos: 0, nulos: 0, secoes: 0, st: 0, est: 0, abst: 0 };
     for (const l of ls) {
       if (!l) continue;
-      for (const k of ['validos', 'aptos', 'comparecimento', 'brancos', 'nulos', 'secoes', 'st']) t[k] += l[k] || 0;
+      for (const k of ['validos', 'aptos', 'comparecimento', 'brancos', 'nulos', 'secoes', 'st', 'est', 'abst']) t[k] += l[k] || 0;
       for (const n in l.votos) t.votos[n] = (t.votos[n] || 0) + l.votos[n];
     }
     return t;
@@ -195,11 +195,30 @@
     // cidades do exterior
     const zz = S.live.cfg.abr.find((a) => a.cd === 'zz');
     await Promise.all(zz.mu.map((m) => pega(url.mun('zz', m.cd)).then((d) => { S.live.cidade[m.cd] = deTSE(d); }).catch(() => {})));
-    // municípios dos estados visíveis (no máximo 2)
-    for (const uf of ufsVisiveis().slice(0, 2)) {
-      const a = S.live.cfg.abr.find((x) => x.cd === uf.toLowerCase());
-      if (!a) continue;
-      await Promise.all(a.mu.map((m) => pega(url.mun(a.cd, m.cd)).then((d) => { S.live.mun[m.cd] = deTSE(d); }).catch(() => {})));
+    await munVisiveis();
+  }
+  // municípios dos estados visíveis: um arquivo por UF montado pelo coletor (o TSE só publica um arquivo por município,
+  // e centenas de pedidos seguidos fazem o TSE recusar com 429). Sem o arquivo do coletor, lê direto do TSE.
+  const munLido = {};
+  async function munVisiveis(so) {
+    const base = window.aoVivoBase || 'https://raw.githubusercontent.com/leandrohgmafra-max/apuracao/ao-vivo';
+    for (const uf of so ? [so] : ufsVisiveis().slice(0, 3)) {
+      const u = uf.toLowerCase();
+      if (so && munLido[u] && Date.now() - munLido[u] < 60000) continue;
+      munLido[u] = Date.now();
+      try {
+        const d = await (await fetch(`${base}/dados/mun/${u}.json`, { cache: 'no-cache' })).json();
+        for (const cod in d) {
+          const [st, ts, te, c, vb, vn, votos, hora] = d[cod];
+          let validos = 0; for (const n in votos) validos += votos[n];
+          const atual = S.live.mun[cod];
+          if (atual && atual.st > st) continue; // leitura direta do TSE mais nova
+          S.live.mun[cod] = { votos, nomes: {}, validos, aptos: te, comparecimento: c, brancos: vb, nulos: vn, secoes: ts, st, hora };
+        }
+      } catch (e) {
+        const a = S.live.cfg && S.live.cfg.abr.find((x) => x.cd === u);
+        if (a) await Promise.all(a.mu.map((m) => pega(url.mun(a.cd, m.cd)).then((d) => { S.live.mun[m.cd] = deTSE(d); }).catch(() => {})));
+      }
     }
     tudo();
   }
@@ -210,6 +229,8 @@
     if (mapa && mapa.getZoom() >= 9) for (const f of mapa.queryRenderedFeatures({ layers: ['mun-fill'] })) cods.add(f.properties.cod);
     let n = 0;
     const jobs = [];
+    // o município escolhido vem direto do TSE (mais novo que o arquivo do coletor)
+    if (S.sel.nivel !== 'uf' && S.sel.cod) { const c = S.sel.cod.split('|')[0], uf = ufDoMun(c); if (uf) jobs.push(pega(url.mun(uf.toLowerCase(), c)).then((d) => { S.live.mun[c] = deTSE(d); }).catch(() => {})); }
     for (const c of cods) {
       const uf = ufDoMun(c); if (!uf) continue;
       const a = S.live.cfg.abr.find((x) => x.cd === uf.toLowerCase());
@@ -391,6 +412,7 @@
     }
     await Promise.all(tarefas);
     pinta();
+    if (S.el === AO_VIVO) for (const uf of ufs.slice(0, 2)) munVisiveis(uf);
     if (S.el === AO_VIVO && z >= 9) cicloZonas();
   }
 
@@ -574,6 +596,22 @@
       d.append(f, el('span', 'nm', nomeCand(c.n)), el('span', 'v', pct(c.v / loc.validos) + ' · ' + nf.format(c.v)), t);
       box.append(d);
     }
+    // diferença entre os dois primeiros, brancos, nulos e abstenção
+    if (r.length > 1) {
+      const dv = r[0].v - r[1].v, dp = (r[0].v - r[1].v) / loc.validos * 100;
+      box.append(el('p', 'dif', `${nomeCand(r[0].n)} à frente por ${nf.format(dv)} votos (${dp.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} ${Math.abs(dp) >= 0.95 && Math.abs(dp) < 1.05 ? 'ponto' : 'pontos'})`));
+    }
+    const tot = (loc.validos || 0) + (loc.brancos || 0) + (loc.nulos || 0);
+    if (loc.brancos != null && loc.nulos != null && tot) {
+      const q = el('div', 'extra');
+      const item = (rot, n, base, nota) => { const x = el('div'); x.append(el('span', 'r', rot), el('b', null, pct(n / base, 1)), el('span', 'q', nf.format(n) + ' ' + nota)); return x; };
+      q.append(item('Brancos', loc.brancos, tot, 'votos'), item('Nulos', loc.nulos, tot, 'votos'));
+      // abstenção só sobre o eleitorado das seções já apuradas (o TSE publica esse eleitorado em "est")
+      const completo = loc.secoes && loc.st >= loc.secoes;
+      const elei = loc.est || (completo ? loc.aptos : 0), abst = loc.est ? (loc.abst || loc.est - (loc.comparecimento || 0)) : (completo ? loc.aptos - loc.comparecimento : 0);
+      if (elei > 0 && abst >= 0) q.append(item('Abstenção', abst, elei, completo ? 'eleitores' : 'eleitores, nas seções apuradas'));
+      box.append(q);
+    }
     host.append(box);
   }
   function meta(loc) {
@@ -581,7 +619,9 @@
     const p = [];
     if (loc.secoes) p.push(pct(loc.st / loc.secoes, 1) + ' das seções apuradas');
     if (loc.aptos) p.push(nf.format(loc.aptos) + ' eleitores');
-    if (loc.aptos && loc.comparecimento) p.push('comparecimento ' + pct(loc.comparecimento / loc.aptos, 1));
+    const completo = loc.secoes && loc.st >= loc.secoes;
+    if (loc.est && loc.comparecimento && !completo) p.push('comparecimento ' + pct(loc.comparecimento / loc.est, 1) + ' nas seções apuradas');
+    else if (loc.aptos && loc.comparecimento && completo) p.push('comparecimento ' + pct(loc.comparecimento / loc.aptos, 1));
     return p.join(' · ');
   }
 

@@ -46,8 +46,11 @@
       } catch (e) { S.sha = null; S.semApi = Date.now() + 600000; }
     }
     if (S.sha) base = `https://raw.githubusercontent.com/${REPO}/${S.sha}`;
+    window.aoVivoBase = base; // o mapa ao vivo (app.js) lê dados/mun/<uf>.json da mesma versão
     try {
       const p = await (await fetch(base + '/dados/projecao.json', { cache: 'no-cache' })).json();
+      // uma leitura em que o coletor não conseguiu falar com o TSE não apaga a última projeção boa
+      if (S.atual && S.atual.corridas && p.corridas) for (const k in p.corridas) if (!p.corridas[k] && S.atual.corridas[k]) p.corridas[k] = S.atual.corridas[k];
       S.atual = p; S.erro = false;
       if (p.n_serie !== S.nSerie) {
         S.serie = await (await fetch(base + '/dados/serie.json', { cache: 'no-cache' })).json();
