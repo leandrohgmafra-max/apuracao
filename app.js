@@ -271,7 +271,7 @@
   function placar() {
     const b = res('brasil');
     const ap = apurado(b);
-    $('pct-apurado').textContent = b ? pct(ap, 2) : '—';
+    if (b) conta($('pct-apurado'), `p|${S.el}|ap`, ap, (v) => pct(v, 2)); else $('pct-apurado').textContent = '—';
     $('progress-fill').style.width = b ? (ap * 100) + '%' : '0';
     $('hora-tse').textContent = b && S.el === AO_VIVO && b.hora && b.st ? '· divulgação TSE ' + b.hora : '';
     const r = ranking(b);
@@ -280,7 +280,10 @@
       const sw = el('span', 'sw'); sw.style.background = cor(c.n);
       const f = foto(c.n) || el('span');
       f.onerror = () => { f.replaceWith(el('span')); };
-      d.append(sw, f, el('span', 'nm', nomeCand(c.n)), el('span', 'pc', b.validos ? pct(c.v / b.validos) : '—'), el('span', 'vt', nf.format(c.v) + ' votos'), el('span', 'ver', S.foco === c.n ? 'Fechar análise' : 'Ver análise e mapa'));
+      const pc = el('span', 'pc'), vt = el('span', 'vt');
+      if (b.validos) conta(pc, `p|${S.el}|${c.n}|pc`, c.v / b.validos, (v) => pct(v)); else pc.textContent = '—';
+      conta(vt, `p|${S.el}|${c.n}|vt`, c.v, (v) => nf.format(Math.round(v)) + ' votos');
+      d.append(sw, f, el('span', 'nm', nomeCand(c.n)), pc, vt, el('span', 'ver', S.foco === c.n ? 'Fechar análise' : 'Ver análise e mapa'));
       d.setAttribute('role', 'button'); d.tabIndex = 0; d.setAttribute('aria-pressed', String(S.foco === c.n));
       const vai = () => focaCandidato(S.foco === c.n ? null : c.n);
       d.addEventListener('click', vai); d.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); vai(); } });

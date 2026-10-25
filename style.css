@@ -301,3 +301,6 @@ h1 .home:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 .partido.auto input { opacity: .35; }
 .partido.mudou { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .partido input { width: 36px; height: 30px; border: 1px solid var(--line); border-radius: 6px; padding: 0; background: none; cursor: pointer; }
+
+/* número subindo após leitura nova do TSE */
+.cand .pc, .cand .vt, #pct-apurado { font-variant-numeric: tabular-nums; }

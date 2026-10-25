@@ -92,14 +92,17 @@
     const r = S.est[S.uf], box = $('cands'); box.textContent = '';
     if (!r) return;
     const ap = r.secoes ? r.st / r.secoes : 0;
-    $('pct-apurado').textContent = pct(ap);
+    conta($('pct-apurado'), `g|${S.uf}|ap`, ap, (v) => pct(v));
     $('progress-fill').style.width = (ap * 100) + '%';
     $('hora-tse').textContent = r.st ? '· divulgação TSE ' + r.hora : '';
     r.cands.forEach((c, i) => {
       const d = el('div', 'cand com-foto' + (i > 1 ? ' menor' : ''));
       const sw = el('i', 'sw'); sw.style.background = cor(c.n);
       const ft = el('img', 'foto'); ft.alt = ''; ft.loading = 'lazy'; ft.src = `data/fotos/2026/3/${S.uf}/${c.n}.jpg`; ft.onerror = () => ft.replaceWith(el('span'));
-      d.append(sw, ft, el('span', 'nm', `${c.nome} (${c.partido})`), el('span', 'pc', r.validos ? pct(c.v / r.validos) : '—'), el('span', 'vt', nf.format(c.v) + ' votos'));
+      const pc = el('span', 'pc'), vt = el('span', 'vt');
+      if (r.validos) conta(pc, `g|${S.uf}|${c.n}|pc`, c.v / r.validos, (v) => pct(v)); else pc.textContent = '—';
+      conta(vt, `g|${S.uf}|${c.n}|vt`, c.v, (v) => nf.format(Math.round(v)) + ' votos');
+      d.append(sw, ft, el('span', 'nm', `${c.nome} (${c.partido})`), pc, vt);
       box.append(d);
     });
     $('nota').textContent = r.st ? `${nf.format(r.validos)} votos válidos · ${nf.format(r.aptos)} eleitores` : 'A apuração começa às 17h (Brasília). Os números aparecem aqui assim que o TSE divulgar.';
