@@ -29,14 +29,17 @@
   let caixa = PAINEIS.projecao; // painel que está sendo desenhado
   const ABAS = [['apuracao', 'Apuração'], ['projecao', 'Projeção'], ['apostas', 'Apostas'], ['abstencao', 'Abstenção']];
   let aba = new URLSearchParams(location.search).get('aba') || 'apuracao';
-  const S = { atual: null, serie: [], sha: null, nSerie: -1, corrida: null, modelo: null, idx: null, sim: null, munNome: null, erro: false, semApi: 0 };
+  const S = { atual: null, serie: [], sha: null, nSerie: -1, corrida: null, modelo: null, idx: null, sim: null, munNome: null, erro: false, semApi: 0, apiEm: 0 };
   try { S.modelo = localStorage.getItem('proj-modelo'); } catch (e) { /* sem storage */ }
 
   // ---------- dados ----------
   async function baixa() {
     let base = `https://raw.githubusercontent.com/${REPO}/${RAMO}`;
-    // a API do GitHub aceita 60 consultas por hora por IP; ao bater o limite, usa o ramo (pode atrasar alguns minutos) por 10 min
-    if (Date.now() > S.semApi) {
+    // a API do GitHub aceita 60 consultas por hora por IP (e muita gente divide IP no celular): consulta no máximo a cada 3 min
+    // e, se ela recusar, usa o ramo por 10 min (o ramo pode atrasar até 5 min)
+    if (document.hidden && S.atual) return;
+    if (Date.now() > S.semApi && Date.now() - S.apiEm > 180000) {
+      S.apiEm = Date.now();
       try {
         const r = await fetch(`https://api.github.com/repos/${REPO}/commits/${RAMO}`, { headers: { Accept: 'application/vnd.github.sha' } });
         if (r.ok) S.sha = (await r.text()).trim(); else { S.sha = null; S.semApi = Date.now() + 600000; }
