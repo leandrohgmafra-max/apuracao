@@ -58,9 +58,15 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .mapa-sec { display: grid; gap: 8px; }
 .mapa-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; font-size: 14px; min-width: 0; }
-.crumbs button { font: inherit; background: none; border: 0; color: var(--accent); cursor: pointer; padding: 2px 4px; border-radius: 4px; }
-.crumbs button[aria-current] { color: var(--ink); font-weight: 600; cursor: default; }
+.crumbs { gap: 6px; }
+/* níveis anteriores parecem botão (chip); o nível atual é só texto em destaque */
+.crumbs button { font: inherit; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 4px 12px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); color: var(--accent); cursor: pointer; box-shadow: 0 1px 0 rgba(0,0,0,.06); transition: background .15s, border-color .15s; }
+.crumbs button:not([aria-current])::before { content: '‹'; font-size: 1.15em; line-height: 1; }
+.crumbs button:not([aria-current]):hover { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); border-color: var(--accent); }
+.crumbs button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.crumbs button[aria-current] { color: var(--ink); font-weight: 700; cursor: default; background: none; border-color: transparent; box-shadow: none; padding-left: 4px; }
 .crumbs span { color: var(--muted); }
+@media (pointer: coarse) { .crumbs button { min-height: 44px; } }
 .legenda { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
 .legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
 .mapa-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); gap: 12px; }
