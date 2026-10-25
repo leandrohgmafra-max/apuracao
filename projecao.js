@@ -123,6 +123,7 @@
 
     if (!passado) { virar(c, mm); simulador(c, mm); comparativo(c, modelos); onde(c, mm, k); }
     linhaTempo(pts, k);
+    if (k === 'br') apostas(c);
   }
 
   function virar(c, mm) {
@@ -262,9 +263,67 @@
     box.append(r, el('p', 'nota', 'Arraste para ver como a apuração e a projeção estavam em cada momento.'));
     caixa.append(box);
   }
+  // ---------- mercado de apostas (Polymarket, API pública) ----------
+  const PM = { ev: null, hist: {}, int: '1m', t: 0 };
+  const INTERVALOS = [['1d', '1 dia', 5], ['1w', '1 semana', 60], ['1m', '1 mês', 360], ['max', 'Tudo', 1440]];
+  async function baixaApostas() {
+    try {
+      const d = await (await fetch('https://gamma-api.polymarket.com/events?slug=brazil-presidential-election')).json();
+      const ms = d[0].markets.filter((m) => !m.closed && m.outcomePrices).map((m) => ({ q: m.question, p: +JSON.parse(m.outcomePrices)[0], tok: JSON.parse(m.clobTokenIds)[0] }))
+        .filter((m) => m.p > 0.01).sort((a, b) => b.p - a.p);
+      PM.ev = { ms, vol: +d[0].volume };
+      const [, , fid] = INTERVALOS.find((x) => x[0] === PM.int);
+      await Promise.all(ms.slice(0, 2).map(async (m) => {
+        const h = await (await fetch(`https://clob.polymarket.com/prices-history?market=${m.tok}&interval=${PM.int}&fidelity=${fid}`)).json();
+        PM.hist[m.tok + PM.int] = h.history || [];
+      }));
+      PM.t = Date.now();
+    } catch (e) { /* mercado fora do ar: o bloco some */ }
+    if (corridaDoEndereco() === 'br' && S.idx == null) desenha();
+  }
+  function quem(q) { const m = /Will (.+?) win/.exec(q); const n = m ? m[1] : q; return /Lula/.test(n) ? 'Lula' : /Fl[áa]vio/.test(n) ? 'Flávio Bolsonaro' : n; }
+  function apostas(c) {
+    if (!PM.ev) return;
+    const box = el('div', 'proj-apostas');
+    box.append(el('h3', null, 'Mercado de apostas'));
+    const ms = PM.ev.ms.slice(0, 2);
+    const cores = (q) => (/Lula/.test(q) ? COR[13] : /Fl[áa]vio/.test(q) ? COR[22] : OUTRAS[0]);
+    const lin = el('div', 'proj-placar');
+    ms.forEach((m) => {
+      const d = el('div', 'proj-cand'); d.style.setProperty('--c', cores(m.q));
+      const nosso = (() => { const x = c.m[S.modelo]; if (!x) return null; const nA = titulo(c.nomes[c.A] || ''); const pn = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(' ')[0].toLowerCase(); return pn(quem(m.q)) === pn(nA) ? x.ch : 1 - x.ch; })();
+      d.append(el('span', 'nm', quem(m.q)), el('span', 'pc', pct(m.p, 0)), el('span', 'fx', 'chance implícita no preço do contrato'),
+        el('span', 'ap', nosso == null ? '' : `nesta projeção: ${pct(nosso, 0)}`));
+      lin.append(d);
+    });
+    box.append(lin);
+    const nav = el('div', 'proj-modelos');
+    for (const [k, t] of INTERVALOS) { const b = el('button', null, t); b.type = 'button'; b.setAttribute('aria-pressed', String(k === PM.int)); b.onclick = () => { PM.int = k; baixaApostas(); }; nav.append(b); }
+    box.append(nav);
+    const series = ms.map((m) => [m, PM.hist[m.tok + PM.int] || []]).filter(([, h]) => h.length > 1);
+    if (series.length) {
+      const W = 640, H = 170, ml = 40, mr = 10, mt = 8, mb = 22, ns = 'http://www.w3.org/2000/svg';
+      const t0 = Math.min(...series.map(([, h]) => h[0].t)), t1 = Math.max(...series.map(([, h]) => h[h.length - 1].t));
+      const xs = (t) => ml + (W - ml - mr) * ((t - t0) / Math.max(1, t1 - t0)), ys = (v) => mt + (H - mt - mb) * (1 - v);
+      const svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('class', 'proj-graf');
+      svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Evolução da chance implícita no mercado de apostas');
+      const add = (tag, at) => { const e = document.createElementNS(ns, tag); for (const a in at) e.setAttribute(a, at[a]); svg.append(e); return e; };
+      for (const v of [0, 0.5, 1]) { add('line', { x1: ml, x2: W - mr, y1: ys(v), y2: ys(v), class: v === 0.5 ? 'meio' : 'grade' }); add('text', { x: ml - 4, y: ys(v) + 4, 'text-anchor': 'end', class: 'eixo' }).textContent = pct(v, 0); }
+      for (const [m, h] of series) add('polyline', { points: h.map((q) => `${xs(q.t)},${ys(q.p)}`).join(' '), class: 'proj', stroke: cores(m.q) });
+      const dt = (t) => new Date(t * 1000).toLocaleString('pt-BR', PM.int === '1d' ? { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' } : { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' });
+      add('text', { x: ml, y: H - 5, class: 'eixo' }).textContent = dt(t0);
+      add('text', { x: W - mr, y: H - 5, 'text-anchor': 'end', class: 'eixo' }).textContent = dt(t1);
+      box.append(svg);
+    }
+    box.append(el('p', 'nota', `Fonte: Polymarket, mercado "Brazil Presidential Election" (US$ ${mi(PM.ev.vol)} negociados), lido ao vivo. O preço de um contrato que paga US$ 1 se o candidato vencer é lido como chance implícita. É a aposta de quem negocia, não uma pesquisa nem um resultado. Casas de aposta brasileiras não publicam cotações de eleição, porque apostas em eleição não são autorizadas no Brasil.`));
+    caixa.append(box);
+  }
+
   // ---------- ciclo ----------
   let ultimoHash = location.hash;
   setInterval(() => { if (location.hash !== ultimoHash) { ultimoHash = location.hash; desenha(); } }, 500);
   baixa();
   setInterval(baixa, 90000);
+  baixaApostas();
+  setInterval(baixaApostas, 60000);
 })();
