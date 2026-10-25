@@ -414,8 +414,9 @@ class Coletor:
         tops = [le_u(d) for d in tops]
         ab_p = self.le_ab(PRES, UFS + ['zz'])
         ab_g = self.le_ab(GOV, GOV_UFS)
-        n_p = self.le_municipios(PRES, UFS + ['zz'], ab_p)
-        n_g = self.le_municipios(GOV, GOV_UFS, ab_g)
+        # sem o arquivo de abrangência é preciso ler todos os municípios; antes da apuração começar não há o que ler
+        n_p = self.le_municipios(PRES, UFS + ['zz'], ab_p) if ab_p or (tops[0] and tops[0]['st']) else 0
+        n_g = self.le_municipios(GOV, GOV_UFS, ab_g) if ab_g or any(t and t['st'] for t in tops[1:]) else 0
         n_s = 0
         if time.time() - self.cs_t > 110:
             n_s = self.le_secoes(); self.cs_t = time.time()
