@@ -19,7 +19,7 @@
   function monta() {
     const temas = d.querySelector('.temas'); temas.textContent = '';
     for (const [v, rot, sw] of [['light', 'Claro', ['#f6f5f1', '#1b1d22', '#0f6b5c']], ['dark', 'Escuro', ['#121417', '#eceae4', '#4fc3a8']], ['brasil', 'Brasil', ['#009c3b', '#ffdf00', '#002776']]]) {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'tema-op'; b.setAttribute('aria-pressed', String((tema || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === v));
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'tema-op'; b.setAttribute('aria-pressed', String((tema || 'brasil') === v));
       const s = document.createElement('span'); s.className = 'sws'; for (const c of sw) { const i = document.createElement('i'); i.style.background = c; s.append(i); }
       b.append(s, rot);
       b.onclick = () => { try { localStorage.setItem('tema', v); } catch (e) { /* ignora */ } location.reload(); };
