@@ -10,7 +10,16 @@
   const UF_NOME = { AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais', PR: 'Paraná', PB: 'Paraíba', PA: 'Pará', PE: 'Pernambuco', PI: 'Piauí', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins' };
   const COR_FIXA = { 13: '#c62828', 22: '#1f4fbf' };
   const PALETA = ['#e08a00', '#2e7d32', '#6a1b9a', '#00838f', '#ad1457', '#5d4037', '#455a64', '#9e9d24', '#3949ab', '#d84315'];
-  const ESCURO = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const TEMA = document.documentElement.dataset.theme;
+  const ESCURO = TEMA ? TEMA === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  // Troca de tema recarrega a página: as cores do mapa e dos gráficos são fixadas na criação.
+  const btTema = document.getElementById('tema');
+  btTema.textContent = ESCURO ? '☀ Tema claro' : '☾ Tema escuro';
+  btTema.addEventListener('click', () => {
+    try { localStorage.setItem('tema', ESCURO ? 'light' : 'dark'); } catch (e) { /* sem storage: só nesta visita */ }
+    document.documentElement.dataset.theme = ESCURO ? 'light' : 'dark';
+    location.reload();
+  });
   const MOV = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 900;
 
   const nf = new Intl.NumberFormat('pt-BR');
