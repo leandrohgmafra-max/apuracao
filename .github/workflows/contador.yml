@@ -35,4 +35,4 @@ jobs:
         run: |
           sub=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" | jq -r .result.subdomain)
           echo "URL_WS=wss://apuracao-contador.$sub.workers.dev/ws"
-          curl -fsS "https://apuracao-contador.$sub.workers.dev/" && echo " (worker respondendo)"
+          curl -fsS --retry 12 --retry-delay 10 --retry-all-errors "https://apuracao-contador.$sub.workers.dev/" && echo " (worker respondendo)"

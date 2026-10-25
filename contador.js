@@ -2,7 +2,7 @@
    Se o serviço não responder, o selo simplesmente não aparece; o resto do site não depende dele. */
 (() => {
   'use strict';
-  const URL_WS = ''; // preenchido quando o contador for publicado (wss://apuracao-contador.<conta>.workers.dev/ws)
+  const URL_WS = 'wss://apuracao-contador.leandrohgmafra.workers.dev/ws';
   const selo = document.getElementById('vendo');
   if (!selo || !URL_WS || !('WebSocket' in window)) return;
   const num = selo.querySelector('.n'), nf = new Intl.NumberFormat('pt-BR');
