@@ -70,6 +70,17 @@
   // ---------- desenho ----------
   function nome(c, n) { return titulo((c.nomes && c.nomes[n]) || 'Nº ' + n); }
   function cor(n, i) { return (window.corUsuario && window.corUsuario(n)) || COR[n] || OUTRAS[i]; }
+  // divisão entre os dois candidatos, sempre os dois lados com a cor de cada um
+  function divide(c, p, rotulos) {
+    const d = el('div', 'divide');
+    const barra = el('div', 'divide-barra');
+    const a = el('i'); a.style.width = (p * 100).toFixed(1) + '%'; a.style.background = cor(c.A, 0);
+    const b = el('i'); b.style.width = ((1 - p) * 100).toFixed(1) + '%'; b.style.background = cor(c.B, 1);
+    barra.append(a, b);
+    const r = el('div', 'divide-rot');
+    r.append(el('span', null, (rotulos ? nome(c, c.A).split(' ')[0] + ' ' : '') + pct(p)), el('span', null, (rotulos ? nome(c, c.B).split(' ')[0] + ' ' : '') + pct(1 - p)));
+    d.append(barra, r); return d;
+  }
 
   // ---------- abas (só na apuração ao vivo) ----------
   function trocaAba(a) {
@@ -247,13 +258,14 @@
     const box = el('div', 'proj-comp');
     box.append(el('h3', null, 'Todas as premissas'));
     const t = el('table'); const h = el('tr');
-    for (const x of ['Premissa', nome(c, c.A), 'Chance']) h.append(el('th', null, x));
+    for (const x of ['Premissa', `${nome(c, c.A).split(' ')[0]} × ${nome(c, c.B).split(' ')[0]}`, 'Chance']) h.append(el('th', null, x));
     const tb = el('tbody');
     for (const m of modelos) {
       const x = c.m[m], r = el('tr');
       if (m === S.modelo) r.className = 'sel';
-      const v = el('td', 'n', pct(x.p, 2)); v.append(el('small', null, `${pct(x.lo)} a ${pct(x.hi)}`));
-      r.append(el('td', null, S.atual.modelos[m]), v, el('td', 'n', pct(x.ch, 0)));
+      const v = el('td', 'div-cel'); v.append(divide(c, x.p, false), el('small', null, `margem de ±${((x.hi - x.lo) * 50).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} pts`));
+      const lider = x.ch >= 0.5 ? c.A : c.B;
+      r.append(el('td', null, S.atual.modelos[m]), v, el('td', 'n', `${nome(c, lider).split(' ')[0]} ${pct(x.ch >= 0.5 ? x.ch : 1 - x.ch, 0)}`));
       r.onclick = () => { S.modelo = m; desenha(); };
       tb.append(r);
     }
@@ -270,12 +282,13 @@
     const sm = el('summary'); sm.append(el('b', null, 'Onde estão os votos que faltam'), el('span', 'nota', ` · mais em ${top}`));
     box.append(sm);
     const t = el('table'); const h = el('tr');
-    for (const x of [k === 'br' ? 'Estado' : 'Município', 'Válidos que faltam', nome(c, c.A) + ' no que falta']) h.append(el('th', null, x));
+    for (const x of [k === 'br' ? 'Estado' : 'Município', 'Válidos que faltam', `${nome(c, c.A).split(' ')[0]} × ${nome(c, c.B).split(' ')[0]} no que falta`]) h.append(el('th', null, x));
     const tb = el('tbody');
     for (const [g, r, p] of mm.onde.slice(0, 10)) {
       const tr = el('tr');
       const nm = k === 'br' ? (g === 'ZZ' ? 'Exterior' : g) : (S.munNome && S.munNome.get(g)) || g;
-      tr.append(el('td', null, nm), el('td', 'n', mi(r)), el('td', 'n', pct(p)));
+      const td = el('td', 'div-cel'); td.append(divide(c, p, false));
+      tr.append(el('td', null, nm), el('td', 'n', mi(r)), td);
       tb.append(tr);
     }
     const th = el('thead'); th.append(h); t.append(th, tb);

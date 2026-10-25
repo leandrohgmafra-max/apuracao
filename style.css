@@ -368,3 +368,10 @@ dialog.mural-d { max-width: min(480px, calc(100vw - 32px)); text-align: left; }
   .patro.lat.esq { left: max(16px, calc((100vw - 1400px) / 2 - 168px)); }
   .patro.lat.dir { right: max(16px, calc((100vw - 1400px) / 2 - 168px)); }
 }
+/* divisão entre os dois candidatos nas tabelas da projeção */
+.div-cel { min-width: 150px; }
+@media (max-width: 560px) { .div-cel { min-width: 110px; } }
+.divide-barra { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--line); }
+.divide-barra i { display: block; height: 100%; }
+.divide-rot { display: flex; justify-content: space-between; font-size: 12px; font-variant-numeric: tabular-nums; margin-top: 3px; }
+.div-cel small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
