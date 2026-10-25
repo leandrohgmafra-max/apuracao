@@ -8,6 +8,7 @@
   const AO_VIVO = '2026-2';
   const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PR', 'PB', 'PA', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SE', 'SP', 'TO'];
   const UF_NOME = { AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais', PR: 'Paraná', PB: 'Paraíba', PA: 'Pará', PE: 'Pernambuco', PI: 'Piauí', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins' };
+  const REGIOES = { N: ['Norte', ['AC', 'AP', 'AM', 'PA', 'RO', 'RR', 'TO']], NE: ['Nordeste', ['AL', 'BA', 'CE', 'MA', 'PB', 'PE', 'PI', 'RN', 'SE']], CO: ['Centro-Oeste', ['DF', 'GO', 'MT', 'MS']], SE: ['Sudeste', ['ES', 'MG', 'RJ', 'SP']], S: ['Sul', ['PR', 'RS', 'SC']] };
   const COR_FIXA = { 13: '#c62828', 22: '#1f4fbf' };
   const PALETA = ['#e08a00', '#2e7d32', '#6a1b9a', '#00838f', '#ad1457', '#5d4037', '#455a64', '#9e9d24', '#3949ab', '#d84315'];
   const TEMA = document.documentElement.dataset.theme;
@@ -47,6 +48,15 @@
     if (COR_FIXA[n]) return COR_FIXA[n];
     if (!ordem.has(n)) ordem.set(n, ordem.size);
     return PALETA[ordem.get(n) % PALETA.length];
+  }
+  // foto do candidato a presidente (data/fotos, gerada de foto_cand do TSE); some se o arquivo não existir
+  function foto(n, el0 = S.el) {
+    if (n == 95 || n == 96) return null;
+    const i = document.createElement('img');
+    i.className = 'foto'; i.alt = ''; i.loading = 'lazy'; i.decoding = 'async';
+    i.src = `data/fotos/${el0.split('-')[0]}/1/BR/${n}.jpg`;
+    i.onerror = () => i.remove();
+    return i;
   }
   const nomeCand = (n) => (S.cands[S.el] && S.cands[S.el][n] ? S.cands[S.el][n].nome : n == 95 ? 'Brancos' : n == 96 ? 'Nulos' : 'Nº ' + n);
 
@@ -251,9 +261,11 @@
     $('hora-tse').textContent = b && S.el === AO_VIVO && b.hora ? '· divulgação TSE ' + b.hora : '';
     const r = ranking(b);
     $('cands').replaceChildren(...r.slice(0, 6).map((c, i) => {
-      const d = el('div', 'cand' + (i > 1 ? ' menor' : ''));
+      const d = el('div', 'cand com-foto' + (i > 1 ? ' menor' : ''));
       const sw = el('span', 'sw'); sw.style.background = cor(c.n);
-      d.append(sw, el('span', 'nm', nomeCand(c.n)), el('span', 'pc', b.validos ? pct(c.v / b.validos) : '—'), el('span', 'vt', nf.format(c.v) + ' votos'));
+      const f = foto(c.n) || el('span');
+      f.onerror = () => { f.replaceWith(el('span')); };
+      d.append(sw, f, el('span', 'nm', nomeCand(c.n)), el('span', 'pc', b.validos ? pct(c.v / b.validos) : '—'), el('span', 'vt', nf.format(c.v) + ' votos'));
       return d;
     }));
     const nota = $('nota-brasil');
@@ -449,6 +461,10 @@
     if (sel.nivel === 'mundo') { mapa.flyTo({ center: [-30, 5], zoom: 1.4, duration: MOV }); }
     if (sel.nivel === 'brasil') b = [[-74, -34], [-34.5, 5.5]];
     if (sel.nivel === 'uf') b = S.ufBox[sel.uf];
+    if (sel.nivel === 'regiao') {
+      const bs = REGIOES[sel.cod][1].map((u) => S.ufBox[u]).filter(Boolean);
+      if (bs.length) b = [[Math.min(...bs.map((x) => x[0][0])), Math.min(...bs.map((x) => x[0][1]))], [Math.max(...bs.map((x) => x[1][0])), Math.max(...bs.map((x) => x[1][1]))]];
+    }
     if (sel.nivel === 'pais') {
       const cs = S.cidades.filter((c) => c.iso === sel.cod);
       if (cs.length) { const xs = cs.map((c) => c.lon), ys = cs.map((c) => c.lat); b = [[Math.min(...xs) - 3, Math.min(...ys) - 3], [Math.max(...xs) + 3, Math.max(...ys) + 3]]; maxZoom = 6; }
@@ -471,7 +487,8 @@
   // ---------- painel ----------
   function migalhas() {
     const s = S.sel, out = [['Mundo', { nivel: 'mundo' }]];
-    if (['brasil', 'uf', 'mun', 'zona', 'local'].includes(s.nivel)) out.push(['Brasil', { nivel: 'brasil' }]);
+    if (['brasil', 'regiao', 'uf', 'mun', 'zona', 'local'].includes(s.nivel)) out.push(['Brasil', { nivel: 'brasil' }]);
+    if (s.nivel === 'regiao') out.push([REGIOES[s.cod][0], s]);
     if (['uf', 'mun', 'zona', 'local'].includes(s.nivel)) out.push([UF_NOME[s.uf] || s.uf, { nivel: 'uf', uf: s.uf }]);
     if (['mun', 'zona', 'local'].includes(s.nivel)) { const c = s.cod.split('|')[0]; const m = munNome(c); out.push([m, { nivel: 'mun', cod: c, uf: s.uf, nome: m }]); }
     if (['zona', 'local'].includes(s.nivel)) { const [c, z] = s.cod.split('|'); out.push(['Zona ' + z, { nivel: 'zona', cod: c + '|' + z, uf: s.uf }]); }
@@ -497,9 +514,11 @@
     const r = ranking(loc);
     if (!loc || !loc.validos) { box.append(el('p', 'meta', loc ? 'Ainda sem votos apurados aqui.' : 'Carregando ou sem dados para esta eleição.')); host.append(box); return; }
     for (const c of r.slice(0, 8)) {
-      const d = el('div', 'barra');
+      const d = el('div', 'barra com-foto');
       const t = el('span', 't'); const i = el('i'); i.style.width = (100 * c.v / loc.validos) + '%'; i.style.background = cor(c.n); t.append(i);
-      d.append(el('span', 'nm', nomeCand(c.n)), el('span', 'v', pct(c.v / loc.validos) + ' · ' + nf.format(c.v)), t);
+      const f = foto(c.n) || el('span');
+      f.onerror = () => { f.replaceWith(el('span')); };
+      d.append(f, el('span', 'nm', nomeCand(c.n)), el('span', 'v', pct(c.v / loc.validos) + ' · ' + nf.format(c.v)), t);
       box.append(d);
     }
     host.append(box);
@@ -524,6 +543,10 @@
       P.append(el('h4', null, 'Brasileiros no exterior'), el('p', 'meta', meta(ext)));
       barras(ext, P);
       P.append(el('p', 'meta', 'Clique num estado, num país ou num ponto do exterior para descer até zonas e locais de votação.'));
+    } else if (s.nivel === 'regiao') {
+      const ufs = REGIOES[s.cod][1];
+      cab('Região', REGIOES[s.cod][0], soma(ufs.map((u) => res('uf', u))));
+      P.append(tabela(['Estado', 'Líder', '%', 'Válidos'], ufs.map((u) => { const l = res('uf', u), L = lider(l); return { cells: [UF_NOME[u], L ? nomeCand(L.n) : '—', L ? pct(L.p, 1) : '—', nf.format((l && l.validos) || 0)], cor: L && cor(L.n), click: () => escolhe({ nivel: 'uf', uf: u }) }; })));
     } else if (s.nivel === 'uf') cab('Estado', UF_NOME[s.uf], res('uf', s.uf));
     else if (s.nivel === 'pais') {
       const l = res('pais', s.cod);
@@ -561,6 +584,7 @@
       const l = localSel();
       if (!l) { P.append(el('p', 'meta', 'Carregando…')); return; }
       P.append(el('p', 'nivel', `Local de votação · Zona ${l.zona} · ${munNome(l.cod)}`), el('h3', null, titulo(l.nome)), el('p', 'meta', `${l.end}, ${titulo(l.bairro)} · ${l.secoes} seções · ${nf.format(l.eleitores)} eleitores`));
+      if (l.sec) P.append(el('p', 'meta', (s.secao ? `Seção ${s.secao} fica aqui. ` : '') + 'Seções deste local: ' + l.sec.replace(/,/g, ', ').replace(/-/g, ' a ')));
       if (l.t1) {
         P.append(el('h4', null, 'Resultado do 1º turno de 2026 neste local'));
         const votos = Object.fromEntries(Object.entries(l.t1).map(([k, v]) => [k.slice(1), v]));
@@ -656,13 +680,40 @@
 
   function tudo() { status(); placar(); pinta(); migalhas(); painel(); tabelas(); evolucao(); dicaMapa(); }
 
-  window.apuracao = { escolhe, estado: S };
+  // usado pela busca (busca.js): carrega o que o destino precisa e então navega
+  async function vaiPara(sel) {
+    if (sel.uf && ['uf', 'mun', 'zona', 'local'].includes(sel.nivel)) {
+      const uf = sel.uf, t = [];
+      if (!S.geoMun[uf]) t.push(dados(`geo/mun/${uf}.json`).then((g) => { S.geoMun[uf] = g; for (const f of g.features) munUf.set(f.properties.cod, uf); }));
+      t.push(carregaMunHist(S.el, uf));
+      if (sel.nivel !== 'uf') {
+        if (!S.geoZonas[uf]) t.push(dados(`geo/zonas/${uf}.json`).then((g) => { S.geoZonas[uf] = g; }).catch(() => { S.geoZonas[uf] = vazio; }));
+        if (!S.locais[uf]) t.push(dados(`locais/${uf}.json`).then((g) => { S.locais[uf] = g; }).catch(() => { S.locais[uf] = []; }));
+      }
+      await Promise.all(t);
+    }
+    if (sel.nivel === 'mun') sel.nome = munNome(sel.cod);
+    escolhe(sel);
+    $('mapa').scrollIntoView({ behavior: MOV ? 'smooth' : 'auto', block: 'center' });
+  }
+  window.apuracao = { escolhe, vaiPara, estado: S };
 
   // ---------- início ----------
   seletor();
   carregaHistorico().then(() => { tudo(); }).catch(() => { $('status-txt').textContent = 'Falha ao carregar o histórico'; });
   iniciaMapa();
   cicloRapido();
+  // vindo da busca de outra página: #ir=<destino em JSON>
+  let ir = null;
+  try { if (location.hash.startsWith('#ir=')) ir = JSON.parse(decodeURIComponent(location.hash.slice(4))); } catch (e) { ir = null; }
+  if (ir) {
+    const t = setInterval(() => {
+      if (!mapa || !mapa.loaded() || !S.ufsGeo || !S.hist) return;
+      clearInterval(t);
+      try { history.replaceState(null, '', location.pathname); } catch (e) { /* ignora */ }
+      vaiPara(ir);
+    }, 300);
+  }
   cicloLento();
   setInterval(cicloRapido, 15000);
   setInterval(cicloLento, 90000);

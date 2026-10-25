@@ -112,12 +112,24 @@
   }
 
   // ---------- painel ----------
-  function barras(lista, total, corDe, rotDe, max = 15) {
+  // foto em data/fotos/<ano>/<cargo>/<UF>/[<mun>-]<numero>.jpg (só de 2004 em diante e só de parte dos candidatos)
+  function foto(n) {
+    if (+S.el.slice(0, 4) < 2004 || n == 95 || n == 96) return null;
+    const uf = S.cargo === 1 ? 'BR' : S.uf;
+    if (!uf || (MUNIC.has(S.cargo) && !S.mun)) return null;
+    const i = el('img', 'foto'); i.alt = ''; i.loading = 'lazy'; i.decoding = 'async';
+    i.src = `data/fotos/${S.el.slice(0, 4)}/${S.cargo}/${uf}/${MUNIC.has(S.cargo) ? S.mun + '-' : ''}${n}.jpg`;
+    i.onerror = () => i.replaceWith(el('span'));
+    return i;
+  }
+  function barras(lista, total, corDe, rotDe, max = 15, fotoDe = null) {
     const bs = el('div', 'barras');
     for (const [k, v] of lista.slice(0, max)) {
       const b = el('div', 'barra'), t = el('span', 't'), f = el('i');
       f.style.width = (total ? v / total * 100 : 0) + '%'; f.style.background = corDe(k); t.append(f);
       const nm = el('span', 'nm'); rotDe(k, nm);
+      const ft = fotoDe && fotoDe(k);
+      if (fotoDe) { b.classList.add('com-foto'); b.append(ft || el('span')); }
       b.append(nm, el('span', 'v', `${pct(total ? v / total : null)} · ${nf.format(v)}`), t);
       bs.append(b);
     }
@@ -162,7 +174,7 @@
       if (c && c[2] === 'E') nm.append(el('span', 'tag', 'eleito'));
       if (c && c[2] === '2') nm.append(el('span', 'tag', '2º turno'));
       nm.append(c ? `${c[0]} (${c[1]})` : 'Nº ' + n);
-    }, PROP.has(S.cargo) ? 30 : 15));
+    }, PROP.has(S.cargo) ? 30 : 15, foto));
   }
   function barrasContagem(lista, tot) {
     const bs = el('div', 'barras');
@@ -360,6 +372,15 @@
     const f = (S.geoMun[S.uf] || { features: [] }).features.find((x) => x.properties.cod === cod);
     if (f && f.geometry) mapa.fitBounds(bbox(f), { padding: 60, maxZoom: 10, duration: 600 });
   }
+
+  // busca (busca.js): estado e município ficam nesta página, no ano e cargo escolhidos; o resto vai para a página ao vivo
+  window.eleicoesVaiPara = (sel) => {
+    const ufs = S.indice && S.indice[S.el] && S.indice[S.el][S.cargo];
+    if (!ufs || !['uf', 'mun'].includes(sel.nivel) || !ufs.includes(sel.uf)) return false;
+    irUf(sel.uf, sel.nivel === 'mun' ? sel.cod : null).then(() => { if (sel.nivel === 'mun') irMun(sel.cod); });
+    $('mapa').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return true;
+  };
 
   // link colado com outro endereço (#ano-turno/cargo/UF/município) na mesma aba
   window.addEventListener('hashchange', () => location.reload());

@@ -88,9 +88,10 @@
     $('progress-fill').style.width = (ap * 100) + '%';
     $('hora-tse').textContent = '· divulgação TSE ' + r.hora;
     r.cands.forEach((c, i) => {
-      const d = el('div', 'cand' + (i > 1 ? ' menor' : ''));
+      const d = el('div', 'cand com-foto' + (i > 1 ? ' menor' : ''));
       const sw = el('i', 'sw'); sw.style.background = cor(c.n);
-      d.append(sw, el('span', 'nm', `${c.nome} (${c.partido})`), el('span', 'pc', r.validos ? pct(c.v / r.validos) : '—'), el('span', 'vt', nf.format(c.v) + ' votos'));
+      const ft = el('img', 'foto'); ft.alt = ''; ft.loading = 'lazy'; ft.src = `data/fotos/2026/3/${S.uf}/${c.n}.jpg`; ft.onerror = () => ft.replaceWith(el('span'));
+      d.append(sw, ft, el('span', 'nm', `${c.nome} (${c.partido})`), el('span', 'pc', r.validos ? pct(c.v / r.validos) : '—'), el('span', 'vt', nf.format(c.v) + ' votos'));
       box.append(d);
     });
     $('nota').textContent = r.st ? `${nf.format(r.validos)} votos válidos · ${nf.format(r.aptos)} eleitores` : 'A apuração começa às 17h (Brasília). Os números aparecem aqui assim que o TSE divulgar.';
