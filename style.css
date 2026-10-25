@@ -99,3 +99,9 @@ tbody tr.click:hover td { background: var(--bg); }
 .chart text { fill: var(--muted); font-size: 11px; font-family: var(--font-body); }
 .rodape { font-size: 12px; color: var(--muted); display: grid; gap: 4px; }
 .rodape p { margin: 0; max-width: 90ch; }
+
+.secoes { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.secoes a { font-size: 14px; padding: 6px 12px; border-radius: 8px; color: var(--muted); text-decoration: none; font-weight: 500; }
+.secoes a:hover { color: var(--ink); background: var(--surface); }
+.secoes a[aria-current="page"] { color: var(--ink); background: var(--surface); box-shadow: inset 0 -2px 0 var(--accent); }
+.secoes .ao-vivo-i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--live); margin-right: 6px; vertical-align: 1px; }
