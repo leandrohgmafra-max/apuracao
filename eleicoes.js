@@ -133,8 +133,8 @@
     // base de brancos e nulos = votos dados no cargo (no Senado com duas vagas, cada eleitor vota duas vezes)
     const dados = l.vv + l.bn + l.nl;
     p.append(el('p', 'meta', `${nf.format(l.vv)} votos válidos · ${nf.format(l.ap)} eleitores · abstenção ${pct(l.ap ? 1 - l.cp / l.ap : null, 1)} · brancos ${pct(dados ? l.bn / dados : null, 1)} · nulos ${pct(dados ? l.nl / dados : null, 1)}`));
-    if (nivel === 'br' && S.cargo !== 1) {
-      // cargos estaduais e municipais no Brasil: só partidos
+    if ((nivel === 'br' && S.cargo !== 1) || (nivel === 'uf' && MUNIC.has(S.cargo))) {
+      // visão agregada (Brasil, ou estado em eleição municipal): só partidos
       if (l.eleitos && Object.keys(l.eleitos).length) {
         p.append(el('h4', null, 'Eleitos por partido'));
         const tot = Object.values(l.eleitos).reduce((a, b) => a + b, 0);
