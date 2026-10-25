@@ -266,7 +266,7 @@
       ind.querySelector('.anel').style.setProperty('--p', String((15 - prox) / 15));
     }
     // antes da primeira divulgação o arquivo do TSE traz a data em que foi preparado (véspera), não uma divulgação
-    t.textContent = S.live.br && S.live.br.st ? `Ao vivo · atualizado há ${s}s · divulgação TSE ${S.live.hora}` : `Ao vivo · conectado ao TSE, aguardando a primeira divulgação (17h de Brasília)`;
+    t.textContent = S.live.br && S.live.br.st ? `Ao vivo · atualizado há ${s}s · divulgação TSE ${S.live.hora}` : `Ao vivo · conectado ao TSE, aguardando a divulgação (votação até 19h de Brasília)`;
   }
   function placar() {
     const b = res('brasil');
@@ -291,7 +291,7 @@
     }));
     const nota = $('nota-brasil');
     if (!b) nota.textContent = '';
-    else if (!b.validos) nota.textContent = 'A apuração começa às 17h (Brasília), quando fecham as urnas. Os números aparecem aqui assim que o TSE divulgar.';
+    else if (!b.validos) nota.textContent = 'A votação foi prorrogada até as 19h (Brasília); a divulgação segue depois disso. Os números aparecem aqui assim que o TSE divulgar.';
     else nota.textContent = `Percentual dos votos válidos. ${nf.format(b.validos)} válidos, ${nf.format(b.brancos || 0)} brancos e ${nf.format(b.nulos || 0)} nulos. Inclui o exterior.`;
   }
 
@@ -743,7 +743,7 @@
     host.replaceChildren();
     if (S.el !== AO_VIVO) { nota.textContent = 'Disponível no 2º turno de 2026, ao vivo.'; return; }
     const pts = S.evol;
-    if (pts.length < 2) { nota.textContent = 'A curva aparece conforme o TSE divulga as seções, a partir das 17h (Brasília). Ela é montada pelo seu navegador enquanto a página está aberta.'; return; }
+    if (pts.length < 2) { nota.textContent = 'A curva aparece conforme o TSE divulga as seções, a partir do fechamento das urnas (19h de Brasília). Ela é montada pelo seu navegador enquanto a página está aberta.'; return; }
     nota.textContent = 'Percentual dos válidos de cada candidato conforme as seções são apuradas (registrado por este navegador).';
     const W = Math.max(320, host.clientWidth), H = 240, m = { t: 10, r: 110, b: 26, l: 40 };
     const ns = ranking(S.live.br).slice(0, 4).map((c) => c.n);

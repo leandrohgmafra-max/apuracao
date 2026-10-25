@@ -77,7 +77,7 @@
       ind.querySelector('.ul').textContent = 'última leitura ' + new Date(S.ultimo).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
       ind.querySelector('.anel').style.setProperty('--p', String((15 - prox) / 15));
     }
-    $('status-txt').textContent = (S.erro ? 'Falha ao ler o TSE, tentando de novo' : 'Ao vivo') + (seg != null ? ` · atualizado há ${seg}s` : '') + (r && r.st ? ` · divulgação TSE ${r.hora}` : r ? ' · aguardando a primeira divulgação (17h de Brasília)' : '');
+    $('status-txt').textContent = (S.erro ? 'Falha ao ler o TSE, tentando de novo' : 'Ao vivo') + (seg != null ? ` · atualizado há ${seg}s` : '') + (r && r.st ? ` · divulgação TSE ${r.hora}` : r ? ' · aguardando a divulgação (votação até 19h de Brasília)' : '');
   }
   function desenhaUfs() {
     const nav = $('ufs'); nav.textContent = '';
@@ -105,7 +105,7 @@
       d.append(sw, ft, el('span', 'nm', `${c.nome} (${c.partido})`), pc, vt);
       box.append(d);
     });
-    $('nota').textContent = r.st ? `${nf.format(r.validos)} votos válidos · ${nf.format(r.aptos)} eleitores` : 'A apuração começa às 17h (Brasília). Os números aparecem aqui assim que o TSE divulgar.';
+    $('nota').textContent = r.st ? `${nf.format(r.validos)} votos válidos · ${nf.format(r.aptos)} eleitores` : 'A votação foi prorrogada até as 19h (Brasília). Os números aparecem aqui assim que o TSE divulgar.';
     const leg = $('legenda'); leg.textContent = '';
     r.cands.forEach((c) => { const s = el('span'); const i = el('i'); i.style.background = cor(c.n); s.append(i, c.nome); leg.append(s); });
     leg.append(el('span', null, 'Tom mais forte = vitória mais folgada'));

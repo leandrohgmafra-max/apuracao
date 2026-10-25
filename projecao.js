@@ -147,8 +147,8 @@
       const ref = el('div', 'proj-ref');
       ref.append(el('b', null, 'Cenário de referência, antes da apuração'),
         el('p', null, k === 'br' && ['sec', 't1', 't22'].includes(S.modelo)
-          ? `A apuração ainda não começou, então isto não é projeção: é o ${S.modelo === 't22' ? '2º turno de 2022' : '1º turno de 2026'} repetido entre os dois finalistas, sem nenhum ajuste. Vira projeção na primeira divulgação do TSE, às 17h (Brasília).`
-          : 'A apuração ainda não começou, então isto não é projeção: sem votos apurados esta premissa não tem informação e fica no meio a meio. Vira projeção na primeira divulgação do TSE, às 17h (Brasília).'));
+          ? `A apuração ainda não começou, então isto não é projeção: é o ${S.modelo === 't22' ? '2º turno de 2022' : '1º turno de 2026'} repetido entre os dois finalistas, sem nenhum ajuste. Vira projeção na divulgação do TSE, após o fechamento das urnas (19h de Brasília).`
+          : 'A apuração ainda não começou, então isto não é projeção: sem votos apurados esta premissa não tem informação e fica no meio a meio. Vira projeção na divulgação do TSE, após o fechamento das urnas (19h de Brasília).'));
       caixa.append(ref);
     } else {
       const quando = el('p', 'proj-quando');

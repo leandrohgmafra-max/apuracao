@@ -313,3 +313,12 @@ h1 .home:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 @media (prefers-reduced-motion: reduce) { .vendo .pulso { animation: none; } }
 .vendo .c { display: none; }
 @media (max-width: 560px) { .vendo .r { display: none; } .vendo .c { display: inline; } }
+
+/* aviso de mudança de horário */
+.aviso { max-width: 520px; text-align: left; }
+.aviso h2 { margin: 4px 0 10px; }
+.aviso p { margin: 0 0 10px; line-height: 1.5; text-align: left; }
+.aviso h2, .aviso .aviso-selo { text-align: left; }
+.aviso-selo { display: inline-block; font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: #fff; background: var(--live); padding: 4px 10px; border-radius: 999px; }
+.aviso-links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.aviso-links a { color: var(--accent); font-weight: 600; }
