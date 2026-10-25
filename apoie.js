@@ -5,6 +5,12 @@
   if (!d) return;
   const cod = document.getElementById('pix-cod'), copia = document.getElementById('pix-copia');
   document.querySelectorAll('[data-apoie]').forEach((b) => b.addEventListener('click', () => { if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }));
+  // compartilhar a partir do painel de apoio: fecha o painel e usa o mesmo fluxo do botão Compartilhar
+  const ac = document.getElementById('apoie-comp');
+  if (ac) ac.addEventListener('click', () => { if (d.close) d.close(); else d.removeAttribute('open'); const c = document.getElementById('compartilha'); if (c) c.click(); });
+  // no celular o botão flutuante some enquanto a pessoa rola e volta quando ela para, para não tapar números
+  const fl = document.querySelector('.pix-flutua');
+  if (fl) { let t = null; addEventListener('scroll', () => { fl.classList.add('rolando'); clearTimeout(t); t = setTimeout(() => fl.classList.remove('rolando'), 1200); }, { passive: true }); }
   document.getElementById('pix-fecha').addEventListener('click', () => d.close ? d.close() : d.removeAttribute('open'));
   d.addEventListener('click', (e) => { if (e.target === d && d.close) d.close(); });
   copia.addEventListener('click', async () => {

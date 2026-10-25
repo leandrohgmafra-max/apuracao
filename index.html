@@ -38,7 +38,7 @@
     </div>
     <div class="acoes topo-acoes">
       <div class="busca-slot" id="busca-slot"></div>
-      <button type="button" class="pix-topo" data-apoie aria-label="Apoie o projeto: faça um PIX (abre o QR Code)"><img src="pix.svg" alt="" width="52" height="52"><span><b>Apoie o projeto</b>Faça um PIX</span></button>
+      <button type="button" class="pix-topo" data-apoie aria-label="Apoie o projeto: compartilhe ou faça um PIX"><img src="pix.svg" alt="" width="52" height="52"><span><b>Apoie o projeto</b>Compartilhe ou faça um PIX</span></button>
       <span class="vendo" id="vendo" hidden role="status"><i class="pulso" aria-hidden="true"></i><span aria-hidden="true">👁</span> <b class="n"></b><span class="r"> pessoas vendo agora</span><span class="c" aria-hidden="true"> online</span></span>
       <button type="button" class="tema" data-mural-ir aria-label="Mural de mensagens"><span aria-hidden="true">💬</span><span class="rot"> Mural</span></button>
       <button type="button" class="tema" id="compartilha" aria-haspopup="true" aria-label="Compartilhar"><span aria-hidden="true">↗</span><span class="rot"> Compartilhar</span></button>
@@ -217,10 +217,12 @@
     <div class="pix-acoes"><button type="button" class="tema mural-copia">Copiar código PIX</button><button type="button" class="tema mural-fecha">Fechar</button></div>
   </div>
 </dialog>
-<button type="button" class="pix-flutua" data-apoie aria-label="Apoie o projeto: faça um PIX">♥ Faça um PIX</button>
+<button type="button" class="pix-flutua" data-apoie aria-label="Apoie o projeto: compartilhe ou faça um PIX">♥ Apoie o projeto</button>
 <dialog class="pix" id="pix" aria-labelledby="pix-tit">
-  <h2 id="pix-tit">Apoie o site</h2>
-  <p>Qualquer valor ajuda a manter o site no ar. Aponte a câmera do app do banco para o QR Code ou copie o código.</p>
+  <h2 id="pix-tit">Apoie o projeto</h2>
+  <p class="apoie-op"><b>1. Compartilhe o site</b> com quem acompanha a apuração.</p>
+  <div class="pix-acoes"><button type="button" class="tema destaque" id="apoie-comp">↗ Compartilhar o site</button></div>
+  <p class="apoie-op"><b>2. Faça um PIX</b> de qualquer valor para manter o site no ar. Aponte a câmera do app do banco para o QR Code ou copie o código.</p>
   <img src="pix.svg" width="220" height="220" alt="QR Code PIX para Leandro Henrique Goncalve">
   <p class="pix-nome">Leandro Henrique Goncalve · São Paulo</p>
   <textarea id="pix-cod" readonly rows="3" aria-label="Código PIX copia e cola">00020101021126580014BR.GOV.BCB.PIX0136f9ae59ed-8fcb-4dce-95bd-372a6102edf05204000053039865802BR5925Leandro Henrique Goncalve6009SAO PAULO62080504daqr630491F8</textarea>
