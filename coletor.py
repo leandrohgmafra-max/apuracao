@@ -23,6 +23,7 @@ GOV_UFS = ['ac', 'am', 'df', 'es', 'rn', 'to']
 AQUI = os.path.dirname(os.path.abspath(__file__))
 SAIDA = os.environ.get('SAIDA') or os.path.join(AQUI, 'dados')
 # erro sistemático assumido para o voto que falta (fração do voto válido), por modelo
+MAX_MUN = 350
 PRIOR = {'simples': 0.05, 'mun': 0.035, 't1': 0.02, 't22': 0.025, 'sec': 0.015}
 NOMES = {'simples': 'Extrapolação simples', 'mun': 'Por município', 't1': 'Variação sobre o 1º turno 2026', 't22': 'Variação sobre o 2º turno 2022', 'sec': 'Por seção (1º turno 2026)'}
 
@@ -40,13 +41,15 @@ def pega(url, tentativas=3):
         except urllib.error.HTTPError as e:
             if e.code in (403, 404):
                 return None
+            if e.code == 429:  # o TSE está limitando: não insiste agora, tenta no próximo ciclo
+                return None
         except Exception:
             pass
         time.sleep(1 + i)
     return None
 
 
-POOL = ThreadPoolExecutor(24)
+POOL = ThreadPoolExecutor(8)
 
 
 def varios(urls):
@@ -309,6 +312,7 @@ class Coletor:
                         alvo.append((uf, m, st))
                 else:
                     alvo.append((uf, m, None))
+        alvo = alvo[:MAX_MUN]  # o resto fica para os próximos ciclos (pedidos demais seguidos o TSE recusa com 429)
         ds = varios([url_u(el, uf, m) for uf, m, _ in alvo])
         for (uf, m, st), d in zip(alvo, ds):
             r = le_u(d)
@@ -422,6 +426,8 @@ class Coletor:
         n_s = 0
         if time.time() - self.cs_t > 110:
             n_s = self.le_secoes(); self.cs_t = time.time()
+        if not any(tops):
+            print('TSE sem resposta neste ciclo (provável 429); mantém o último arquivo', flush=True); return None
         corr = {'br': self.corrida(PRES, UFS + ['zz'], tops[0])}
         for uf, tp in zip(GOV_UFS, tops[1:]):
             corr[uf] = self.corrida(GOV, [uf], tp)
