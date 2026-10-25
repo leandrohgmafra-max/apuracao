@@ -1,0 +1,38 @@
+# Publica o contador de pessoas online (Cloudflare Worker) quando contador/ muda.
+# Precisa dos segredos CLOUDFLARE_API_TOKEN e CLOUDFLARE_ACCOUNT_ID; sem eles, só avisa e termina sem erro.
+name: contador
+on:
+  push:
+    branches: [main]
+    paths: ['contador/**', '.github/workflows/contador.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency: { group: contador, cancel-in-progress: false }
+jobs:
+  publica:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Segredos presentes?
+        id: s
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then echo "ok=1" >> "$GITHUB_OUTPUT"; else echo "::warning::Faltam os segredos CLOUDFLARE_API_TOKEN e CLOUDFLARE_ACCOUNT_ID; nada publicado."; fi
+      - uses: actions/checkout@v4
+        if: steps.s.outputs.ok == '1'
+      - uses: actions/setup-node@v4
+        if: steps.s.outputs.ok == '1'
+        with: { node-version: 22 }
+      - name: Publica o worker
+        if: steps.s.outputs.ok == '1'
+        working-directory: contador
+        run: npx --yes wrangler@4.152.0 deploy
+      - name: Endereço do contador
+        if: steps.s.outputs.ok == '1'
+        run: |
+          sub=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" | jq -r .result.subdomain)
+          echo "URL_WS=wss://apuracao-contador.$sub.workers.dev/ws"
+          curl -fsS "https://apuracao-contador.$sub.workers.dev/" && echo " (worker respondendo)"

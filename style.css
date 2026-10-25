@@ -304,3 +304,12 @@ h1 .home:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 
 /* número subindo após leitura nova do TSE */
 .cand .pc, .cand .vt, #pct-apurado { font-variant-numeric: tabular-nums; }
+
+/* pessoas vendo agora */
+.vendo { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--ink); padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.vendo[hidden] { display: none; }
+.vendo .pulso { width: 8px; height: 8px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 0 color-mix(in srgb, var(--live) 60%, transparent); animation: pulso 2s infinite; }
+@keyframes pulso { 70% { box-shadow: 0 0 0 7px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .vendo .pulso { animation: none; } }
+.vendo .c { display: none; }
+@media (max-width: 560px) { .vendo .r { display: none; } .vendo .c { display: inline; } }
