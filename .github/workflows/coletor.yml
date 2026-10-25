@@ -1,0 +1,28 @@
+name: coletor-apuracao
+# Lê o TSE a cada ~45 s durante a apuração e publica dados/projecao.json e dados/serie.json neste ramo.
+# O agendamento a cada 10 min só serve de reserva: se a execução cair, a próxima retoma.
+on:
+  push:
+    branches: [ao-vivo]
+    paths: ['coletor.py', '.github/workflows/coletor.yml']
+  workflow_dispatch:
+  schedule:
+    - cron: '*/10 19-23 25 10 *'
+    - cron: '*/10 0-2 26 10 *'
+permissions:
+  contents: write
+concurrency:
+  group: coletor
+  cancel-in-progress: false
+jobs:
+  coleta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ao-vivo
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python3 -I coletor.py
