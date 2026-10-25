@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apuração Presidencial 2026</title>
+<meta name="description" content="Apuração da eleição presidencial de 2026 ao vivo, com dados do TSE: Brasil, estados, municípios, zonas eleitorais, locais de votação e brasileiros no exterior, e o histórico desde 2014.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Apuração Presidencial</h1>
+      <p class="sub" id="sub-eleicao">2026 · 2º turno</p>
+    </div>
+    <div class="status" id="status" aria-live="polite">
+      <span class="dot" id="status-dot"></span>
+      <span id="status-txt">Carregando…</span>
+    </div>
+  </header>
+
+  <nav class="els" id="eleicoes" aria-label="Escolha a eleição"></nav>
+
+  <section class="placar" id="placar" aria-label="Resultado no Brasil">
+    <div class="progress">
+      <div class="progress-txt"><b id="pct-apurado">—</b> das seções apuradas <span id="hora-tse" class="muted"></span></div>
+      <div class="progress-bar"><i id="progress-fill"></i></div>
+    </div>
+    <div class="cands" id="cands"></div>
+    <p class="nota" id="nota-brasil"></p>
+  </section>
+
+  <section class="mapa-sec" aria-label="Mapa">
+    <div class="mapa-head">
+      <nav class="crumbs" id="crumbs" aria-label="Onde você está no mapa"></nav>
+      <div class="legenda" id="legenda"></div>
+    </div>
+    <div class="mapa-grid">
+      <div class="mapa" id="mapa"><div class="mapa-dica" id="mapa-dica"></div></div>
+      <aside class="painel" id="painel" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <section class="grid2">
+    <article class="card" id="card-evolucao">
+      <h2>Evolução da apuração</h2>
+      <p class="nota" id="evol-nota">Percentual dos válidos de cada candidato conforme as seções são apuradas.</p>
+      <div class="chart" id="evol"></div>
+    </article>
+    <article class="card" id="card-exterior">
+      <h2>Brasileiros no exterior</h2>
+      <p class="nota">Resultado por país. Clique para ver no mapa.</p>
+      <div class="tbl"><table id="tab-paises"><thead><tr><th>País</th><th>Líder</th><th class="n">%</th><th class="n">Válidos</th><th class="n">Apurado</th></tr></thead><tbody></tbody></table></div>
+    </article>
+  </section>
+
+  <section class="card" id="card-estados">
+    <h2>Por estado</h2>
+    <div class="tbl"><table id="tab-ufs"><thead><tr><th>Estado</th><th>Líder</th><th class="n">%</th><th class="n">2º</th><th class="n">%</th><th class="n">Válidos</th><th class="n">Apurado</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <footer class="rodape">
+    <p>Fonte: Tribunal Superior Eleitoral. 2º turno de 2026 lido ao vivo de resultados.tse.jus.br pelo seu navegador a cada 15 segundos. Turnos anteriores, municípios, zonas e locais de votação: Portal de Dados Abertos do TSE.</p>
+    <p>A área de cada zona eleitoral no mapa é aproximada: o TSE não publica o contorno das zonas, então ela foi desenhada a partir da posição dos locais de votação de cada zona. Posição das cidades do exterior também aproximada. Mapa base © OpenStreetMap, OpenFreeMap.</p>
+  </footer>
+</div>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
