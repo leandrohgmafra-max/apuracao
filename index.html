@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Apuração Presidencial 2026</title>
-<meta name="description" content="Apuração da eleição presidencial de 2026 ao vivo, com dados do TSE: Brasil, estados, municípios, zonas eleitorais, locais de votação e brasileiros no exterior, e o histórico desde 2014.">
+<title>Eleições no Brasil</title>
+<meta name="description" content="Apuração de 2026 ao vivo e todas as eleições desde 1998, com dados do TSE: presidente, governador, senador, deputados, prefeito e vereador, até a zona eleitoral e o local de votação.">
 <script>try{var t=localStorage.getItem('tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://leandrohgmafra-max.github.io/apuracao/">
@@ -26,68 +26,125 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="secoes" aria-label="Seções do site"><a href="./" aria-current="page"><span class="ao-vivo-i"></span>Presidente 2026</a><a href="governador.html"><span class="ao-vivo-i"></span>Governador 2026</a><a href="eleicoes.html">Todas as eleições desde 1998</a></nav>
   <header class="top">
     <div class="brand">
-      <h1>Apuração Presidencial</h1>
-      <p class="sub" id="sub-eleicao">2026 · 2º turno</p>
+      <h1>Eleições no Brasil</h1>
+      <p class="sub" id="titulo-sel">2026 · 2º turno · Presidente</p>
     </div>
-    <div class="acoes">
-      <div class="status" id="status" aria-live="polite">
-        <span class="dot" id="status-dot"></span>
-        <span id="status-txt">Carregando…</span>
-      </div>
+    <div class="acoes topo-acoes">
+      <div class="busca-slot" id="busca-slot"></div>
       <button type="button" class="tema" id="tema"></button>
     </div>
   </header>
 
-  <nav class="els" id="eleicoes" aria-label="Escolha a eleição"></nav>
-
-  <section class="placar" id="placar" aria-label="Resultado no Brasil">
-    <div class="progress">
-      <div class="progress-txt"><b id="pct-apurado">—</b> das seções apuradas <span id="hora-tse" class="muted"></span></div>
-      <div class="progress-bar"><i id="progress-fill"></i></div>
-    </div>
-    <div class="cands" id="cands"></div>
-    <p class="nota" id="nota-brasil"></p>
+  <section class="filtros" aria-label="Escolha a eleição">
+    <nav class="els" id="f-anos" aria-label="Ano"></nav>
+    <nav class="els" id="f-turnos" aria-label="Turno"></nav>
+    <nav class="els" id="f-cargos" aria-label="Cargo"></nav>
   </section>
 
-  <section class="mapa-sec" aria-label="Mapa">
-    <div class="mapa-head">
-      <nav class="crumbs" id="crumbs" aria-label="Onde você está no mapa"></nav>
-      <div class="legenda" id="legenda"></div>
-    </div>
-    <div class="mapa-grid">
-      <div class="mapa" id="mapa"><div class="mapa-dica" id="mapa-dica"></div></div>
-      <aside class="painel" id="painel" aria-live="polite"></aside>
-    </div>
-  </section>
+  <!-- presidente 2014-2026 (mapa do mundo, zonas e locais; 2026 2º turno ao vivo) -->
+  <div class="visao" id="v-pres" hidden>
+    <div class="status linha-status" aria-live="polite"><span class="dot" id="status-dot"></span><span id="status-txt">Carregando…</span><span id="sub-eleicao" hidden></span></div>
+    <nav class="els" id="eleicoes" hidden></nav>
+    <section class="placar" aria-label="Resultado no Brasil">
+      <div class="progress">
+        <div class="progress-txt"><b id="pct-apurado">—</b> das seções apuradas <span id="hora-tse" class="muted"></span></div>
+        <div class="progress-bar"><i id="progress-fill"></i></div>
+      </div>
+      <div class="cands" id="cands"></div>
+      <p class="nota" id="nota-brasil"></p>
+    </section>
+    <section class="mapa-sec" aria-label="Mapa">
+      <div class="mapa-head">
+        <nav class="crumbs" id="crumbs" aria-label="Onde você está no mapa"></nav>
+        <div class="legenda" id="legenda"></div>
+      </div>
+      <div class="mapa-grid">
+        <div class="mapa" id="mapa"><div class="mapa-dica" id="mapa-dica"></div></div>
+        <aside class="painel" id="painel" aria-live="polite"></aside>
+      </div>
+    </section>
+    <section class="grid2">
+      <article class="card" id="card-evolucao">
+        <h2>Evolução da apuração</h2>
+        <p class="nota" id="evol-nota">Percentual dos válidos de cada candidato conforme as seções são apuradas.</p>
+        <div class="chart" id="evol"></div>
+      </article>
+      <article class="card" id="card-exterior">
+        <h2>Brasileiros no exterior</h2>
+        <p class="nota">Resultado por país. Clique para ver no mapa.</p>
+        <div class="tbl"><table id="tab-paises"><thead><tr><th>País</th><th>Líder</th><th class="n">%</th><th class="n">Válidos</th><th class="n">Apurado</th></tr></thead><tbody></tbody></table></div>
+      </article>
+    </section>
+    <section class="card" id="card-estados">
+      <h2>Por estado</h2>
+      <div class="tbl"><table id="tab-ufs"><thead><tr><th>Estado</th><th>Líder</th><th class="n">%</th><th class="n">2º</th><th class="n">%</th><th class="n">Válidos</th><th class="n">Apurado</th></tr></thead><tbody></tbody></table></div>
+    </section>
+  </div>
 
-  <section class="grid2">
-    <article class="card" id="card-evolucao">
-      <h2>Evolução da apuração</h2>
-      <p class="nota" id="evol-nota">Percentual dos válidos de cada candidato conforme as seções são apuradas.</p>
-      <div class="chart" id="evol"></div>
-    </article>
-    <article class="card" id="card-exterior">
-      <h2>Brasileiros no exterior</h2>
-      <p class="nota">Resultado por país. Clique para ver no mapa.</p>
-      <div class="tbl"><table id="tab-paises"><thead><tr><th>País</th><th>Líder</th><th class="n">%</th><th class="n">Válidos</th><th class="n">Apurado</th></tr></thead><tbody></tbody></table></div>
-    </article>
-  </section>
+  <!-- governador 2026 2º turno ao vivo -->
+  <div class="visao" id="v-gov" hidden>
+    <div class="status linha-status" aria-live="polite"><span class="dot" id="status-dot"></span><span id="status-txt">Carregando…</span><span id="sub-eleicao" hidden> </span></div>
+    <nav class="els" id="ufs" aria-label="Escolha o estado"></nav>
+    <section class="placar" aria-label="Resultado no estado">
+      <div class="progress">
+        <div class="progress-txt"><b id="pct-apurado">—</b> das seções apuradas <span id="hora-tse" class="muted"></span></div>
+        <div class="progress-bar"><i id="progress-fill"></i></div>
+      </div>
+      <div class="cands" id="cands"></div>
+      <p class="nota" id="nota"></p>
+    </section>
+    <section class="mapa-sec" aria-label="Mapa">
+      <div class="mapa-head">
+        <nav class="crumbs" id="crumbs"></nav>
+        <div class="legenda" id="legenda"></div>
+      </div>
+      <div class="mapa-grid">
+        <div class="mapa" id="mapa"><div class="mapa-dica">Clique num município para ver o resultado</div></div>
+        <aside class="painel" id="painel" aria-live="polite"></aside>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Por município</h2>
+      <div class="tbl"><table id="tab"><thead><tr><th>Município</th><th>Líder</th><th class="n">%</th><th class="n">Válidos</th><th class="n">Apurado</th></tr></thead><tbody></tbody></table></div>
+    </section>
+  </div>
 
-  <section class="card" id="card-estados">
-    <h2>Por estado</h2>
-    <div class="tbl"><table id="tab-ufs"><thead><tr><th>Estado</th><th>Líder</th><th class="n">%</th><th class="n">2º</th><th class="n">%</th><th class="n">Válidos</th><th class="n">Apurado</th></tr></thead><tbody></tbody></table></div>
-  </section>
+  <!-- todas as eleições (1998-2026, todos os cargos) -->
+  <div class="visao" id="v-hist" hidden>
+    <nav class="els" id="anos" hidden></nav><nav class="els" id="turnos" hidden></nav><nav class="els" id="cargos" hidden></nav>
+    <section class="mapa-sec" aria-label="Mapa">
+      <div class="mapa-head">
+        <nav class="crumbs" id="crumbs"></nav>
+        <div class="legenda" id="legenda"></div>
+      </div>
+      <div class="busca" id="busca" hidden>
+        <input id="busca-in" list="busca-lista" placeholder="Ver no mapa onde um candidato teve votos" autocomplete="off">
+        <datalist id="busca-lista"></datalist>
+        <button type="button" id="busca-limpa" hidden>Limpar</button>
+      </div>
+      <div class="mapa-grid">
+        <div class="mapa" id="mapa"><div class="mapa-dica" id="dica"></div></div>
+        <aside class="painel" id="painel" aria-live="polite"></aside>
+      </div>
+    </section>
+    <section class="card">
+      <h2 id="tab-titulo">Resultado</h2>
+      <div class="tbl"><table id="tab"><thead></thead><tbody></tbody></table></div>
+    </section>
+  </div>
 
   <footer class="rodape">
-    <p>Fonte: Tribunal Superior Eleitoral. 2º turno de 2026 lido ao vivo de resultados.tse.jus.br pelo seu navegador a cada 15 segundos. Turnos anteriores, municípios, zonas e locais de votação: Portal de Dados Abertos do TSE.</p>
-    <p>A área de cada zona eleitoral no mapa é aproximada: o TSE não publica o contorno das zonas, então ela foi desenhada a partir da posição dos locais de votação de cada zona. Posição das cidades do exterior também aproximada. Mapa base © OpenStreetMap, OpenFreeMap.</p>
+    <p>Fonte: Tribunal Superior Eleitoral. 2º turno de 2026 (presidente e governador) lido ao vivo de resultados.tse.jus.br pelo seu navegador a cada 15 segundos. Demais eleições, municípios, zonas, locais de votação e fotos: Portal de Dados Abertos do TSE.</p>
+    <p>Percentuais sobre votos válidos do cargo. Em anos com duas vagas no Senado cada eleitor vota duas vezes, então os percentuais somam 200%. A área de cada zona eleitoral é aproximada (o TSE não publica o contorno), desenhada a partir da posição dos locais de votação. Municípios criados depois de uma eleição aparecem sem cor nela. Fotos dos candidatos só existem de 2004 em diante. Mapa base © OpenStreetMap, OpenFreeMap.</p>
   </footer>
 </div>
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="busca.js" defer></script>
 <script src="app.js"></script>
+<script src="governador.js"></script>
+<script src="eleicoes.js"></script>
+<script src="filtros.js"></script>
+<script src="busca.js"></script>
 </body>
 </html>

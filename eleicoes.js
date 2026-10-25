@@ -21,7 +21,8 @@
 
   const nf = new Intl.NumberFormat('pt-BR');
   const pct = (v, d = 2) => (v == null || !isFinite(v) ? '—' : (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%');
-  const $ = (id) => document.getElementById(id);
+  const RAIZ = document.getElementById('v-hist');
+  const $ = (id) => RAIZ.querySelector('#' + id);
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
   const extra = {};
   const corPartido = (sg) => COR_PARTIDO[sg] || extra[sg] || (extra[sg] = PALETA[Object.keys(extra).length % PALETA.length]);
@@ -229,7 +230,7 @@
   }
   const opac = (p) => Math.max(0.18, Math.min(0.9, 0.2 + (p - 0.3) * 1.1));
   function iniciaMapa() {
-    mapa = new maplibregl.Map({ container: 'mapa', style: ESCURO ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron', center: [-53, -14], zoom: 3.2, minZoom: 2, dragRotate: false, attributionControl: { compact: true } });
+    mapa = new maplibregl.Map({ container: $('mapa'), style: ESCURO ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron', center: [-53, -14], zoom: 3.2, minZoom: 2, dragRotate: false, attributionControl: { compact: true } });
     mapa.touchZoomRotate.disableRotation();
     mapa.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     return new Promise((ok) => mapa.on('load', async () => {
@@ -335,7 +336,7 @@
   function atualiza() {
     crumbs(); desenhaPainel(); desenhaTabela(); legenda(); preparaBusca(); pintaUfs(); pintaMun(); destaca();
     $('dica').textContent = !S.uf ? 'Clique num estado' : 'Clique num município';
-    const h = [S.el, S.cargo, S.uf || '', S.mun || ''].join('/');
+    const h = [S.el, S.cargo, S.uf || '', S.mun || ''].join('/').replace(/\/+$/, '');
     try { history.replaceState(null, '', '#' + h); } catch (e) { /* ignora */ }
   }
   async function trocaEleicao(el) {
@@ -382,13 +383,21 @@
     return true;
   };
 
-  // link colado com outro endereço (#ano-turno/cargo/UF/município) na mesma aba
-  window.addEventListener('hashchange', () => location.reload());
+  // filtros.js troca ano/turno/cargo por aqui
+  window.historico = {
+    redimensiona: () => { if (mapa) mapa.resize(); },
+    define: async (el, cargo) => {
+      if (!S.indice || !S.indice[el] || !S.indice[el][cargo]) return;
+      if (el === S.el && cargo === S.cargo) return;
+      S.cargo = cargo; S.busca = null;
+      if (el !== S.el) return trocaEleicao(el);
+      trocaCargo(cargo);
+    },
+  };
 
-  (async () => {
+  window.iniciaHist = async (el0, c0, uf0, mun0) => {
     const pronto = iniciaMapa();
     S.indice = await json('h/indice.json');
-    const [el0, c0, uf0, mun0] = decodeURIComponent(location.hash.slice(1)).split('/');
     S.el = S.indice[el0] ? el0 : Object.keys(S.indice).sort().reverse().find((k) => k.endsWith('-1'));
     S.cargo = S.indice[S.el][c0] ? +c0 : ORDEM.find((c) => S.indice[S.el][c]);
     S.resumo = await json(`h/${S.el}/resumo.json`);
@@ -396,5 +405,5 @@
     desenhaFiltros();
     if (uf0 && S.indice[S.el][S.cargo].includes(uf0)) await irUf(uf0, mun0 || null); else irBrasil();
     if (mun0) irMun(mun0);
-  })();
+  };
 })();

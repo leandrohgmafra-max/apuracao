@@ -18,7 +18,8 @@
 
   const nf = new Intl.NumberFormat('pt-BR');
   const pct = (v, d = 2) => (v == null || !isFinite(v) ? '—' : (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%');
-  const $ = (id) => document.getElementById(id);
+  const RAIZ = document.getElementById('v-gov');
+  const $ = (id) => RAIZ.querySelector('#' + id);
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
   const titulo = (s) => (s || '').toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/\b(Da|De|Do|Das|Dos|E)\b/g, (m) => m.toLowerCase());
 
@@ -123,7 +124,7 @@
       const tr = el('tr', 'click'), L = r.validos ? r.cands[0] : null;
       const td = el('td'); const sw = el('span', 'sw'); sw.style.background = L ? cor(L.n) : 'transparent'; td.append(sw, L ? L.nome : '—');
       tr.append(el('td', null, r.nome), td, el('td', 'n', L ? pct(L.v / r.validos, 1) : '—'), el('td', 'n', nf.format(r.validos)), el('td', 'n', pct(r.secoes ? r.st / r.secoes : 0, 0)));
-      tr.onclick = () => { S.sel = cod; desenhaPainel(); destaca(); document.getElementById('mapa').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+      tr.onclick = () => { S.sel = cod; desenhaPainel(); destaca(); $('mapa').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
       tb.append(tr);
     });
   }
@@ -138,7 +139,7 @@
     return [[x0, y0], [x1, y1]];
   }
   function iniciaMapa() {
-    mapa = new maplibregl.Map({ container: 'mapa', style: ESCURO ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron', center: [-50, -12], zoom: 3.5, dragRotate: false, attributionControl: { compact: true } });
+    mapa = new maplibregl.Map({ container: $('mapa'), style: ESCURO ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron', center: [-50, -12], zoom: 3.5, dragRotate: false, attributionControl: { compact: true } });
     mapa.touchZoomRotate.disableRotation();
     mapa.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     return new Promise((ok) => mapa.on('load', () => {
@@ -187,7 +188,7 @@
   let tEst = null, tMun = null;
   async function escolheUf(uf) {
     S.uf = uf; S.sel = null;
-    try { history.replaceState(null, '', '#' + uf); } catch (e) { /* ignora */ }
+    try { history.replaceState(null, '', '#2026-2/3/' + uf); } catch (e) { /* ignora */ }
     desenhaUfs(); $('crumbs').textContent = UF_NOME[uf];
     $('tab').tBodies[0].textContent = ''; desenhaPainel();
     const g = await carregaGeo(uf);
@@ -200,14 +201,15 @@
     tMun = setInterval(lerMunicipios, 60000);
   }
 
-  (async () => {
+  window.governador = { redimensiona: () => { if (mapa) mapa.resize(); } };
+  window.iniciaGov = async (ufPedida) => {
     const pronto = iniciaMapa();
     try { S.cfg = await pega(`${TSE}/config/mun-${E6}-cm.json`); } catch (e) { $('status-txt').textContent = 'Não consegui ler a configuração do TSE. Recarregue a página.'; return; }
     S.ufs = S.cfg.abr.map((a) => a.cd.toUpperCase()).filter((u) => u !== 'ZZ' && u !== 'BR').sort();
     if (EL === '6259') $('sub-eleicao').firstChild.textContent = '2026 · 1º turno · ';
     await pronto;
-    const pedido = location.hash.slice(1).toUpperCase();
+    const pedido = (ufPedida || '').toUpperCase();
     escolheUf(S.ufs.includes(pedido) ? pedido : S.ufs.includes('ES') ? 'ES' : S.ufs[0]);
     setInterval(status, 1000);
-  })();
+  };
 })();

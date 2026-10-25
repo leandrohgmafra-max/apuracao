@@ -2,80 +2,10 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Eleições no Brasil desde 1998</title>
-<meta name="description" content="Resultado de todas as eleições desde 1998, por estado e município: presidente, governador, senador, deputados, prefeito e vereador. Dados abertos do TSE.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://leandrohgmafra-max.github.io/apuracao/eleicoes.html">
-<meta property="og:title" content="Eleições no Brasil desde 1998">
-<meta property="og:description" content="Todos os cargos, por estado e município: presidente, governador, senador, deputados, prefeito e vereador. Dados abertos do TSE.">
-<meta property="og:image" content="https://leandrohgmafra-max.github.io/apuracao/og.png">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://leandrohgmafra-max.github.io/apuracao/og.png">
-<script>try{var t=localStorage.getItem('tema');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css">
-<style>
-.filtros { display: grid; gap: 8px; }
-.filtros .rot { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-right: 4px; align-self: center; }
-.busca[hidden] { display: none; }
-.busca { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.busca input { font: inherit; font-size: 14px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); min-width: min(100%, 320px); }
-.busca button { font: inherit; font-size: 13px; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
-.tag { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--accent); color: var(--bg); margin-right: 6px; vertical-align: 1px; }
-.abas { display: flex; gap: 6px; }
-.abas button { font: inherit; font-size: 13px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
-.abas button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-</style>
+<title>Eleições no Brasil</title>
+<meta name="robots" content="noindex">
+<script>location.replace('./' + location.hash);</script>
+<meta http-equiv="refresh" content="0; url=./">
 </head>
-<body>
-<div class="wrap">
-  <nav class="secoes" aria-label="Seções do site"><a href="./"><span class="ao-vivo-i"></span>Presidente 2026</a><a href="governador.html"><span class="ao-vivo-i"></span>Governador 2026</a><a href="eleicoes.html" aria-current="page">Todas as eleições desde 1998</a></nav>
-  <header class="top">
-    <div class="brand">
-      <h1>Eleições no Brasil</h1>
-      <p class="sub">Todos os cargos desde 1998</p>
-    </div>
-    <div class="acoes"><button type="button" class="tema" id="tema"></button></div>
-  </header>
-
-  <section class="filtros" aria-label="Escolha a eleição">
-    <nav class="els" id="anos"><span class="rot">Ano</span></nav>
-    <nav class="els" id="turnos"></nav>
-    <nav class="els" id="cargos"></nav>
-  </section>
-
-  <section class="mapa-sec" aria-label="Mapa">
-    <div class="mapa-head">
-      <nav class="crumbs" id="crumbs"></nav>
-      <div class="legenda" id="legenda"></div>
-    </div>
-    <div class="busca" id="busca" hidden>
-      <input id="busca-in" list="busca-lista" placeholder="Ver no mapa onde um candidato teve votos" autocomplete="off">
-      <datalist id="busca-lista"></datalist>
-      <button type="button" id="busca-limpa" hidden>Limpar</button>
-    </div>
-    <div class="mapa-grid">
-      <div class="mapa" id="mapa"><div class="mapa-dica" id="dica"></div></div>
-      <aside class="painel" id="painel" aria-live="polite"></aside>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2 id="tab-titulo">Resultado</h2>
-    <div class="tbl"><table id="tab"><thead></thead><tbody></tbody></table></div>
-  </section>
-
-  <footer class="rodape">
-    <p>Fonte: Portal de Dados Abertos do TSE (votação por candidato, por partido e detalhe da votação, por município e zona). Percentuais sobre votos válidos do cargo. Em anos com duas vagas no Senado cada eleitor vota duas vezes, então os percentuais somam 200%.</p>
-    <p>Limites do mapa municipal atual: municípios criados depois de uma eleição aparecem sem cor nela. 1998 a 2010 não trazem a contagem de seções. Mapa base © OpenStreetMap, OpenFreeMap.</p>
-  </footer>
-</div>
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="busca.js" defer></script>
-<script src="eleicoes.js"></script>
-</body>
+<body><p><a href="./">Eleições no Brasil</a></p></body>
 </html>

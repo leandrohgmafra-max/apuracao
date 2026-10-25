@@ -121,3 +121,23 @@ tbody tr.click:hover td { background: var(--bg); }
 .barra.com-foto { grid-template-columns: 34px minmax(0, 1fr) auto; }
 .barra.com-foto .foto { grid-row: 1 / span 2; }
 .barra.com-foto .t { grid-column: 2 / -1; }
+
+.filtros { display: grid; gap: 8px; }
+.filtros .rot { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-right: 4px; align-self: center; }
+.busca[hidden] { display: none; }
+.busca { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.busca input { font: inherit; font-size: 14px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); min-width: min(100%, 320px); }
+.busca button { font: inherit; font-size: 13px; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.tag { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--accent); color: var(--bg); margin-right: 6px; vertical-align: 1px; }
+.abas { display: flex; gap: 6px; }
+.abas button { font: inherit; font-size: 13px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.abas button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+.visao { display: grid; gap: 16px; min-width: 0; }
+.visao[hidden] { display: none; }
+.linha-status { justify-content: flex-start; }
+.topo-acoes { flex: 1 1 320px; justify-content: flex-end; }
+.busca-slot { flex: 1 1 260px; max-width: 440px; min-width: 0; display: flex; }
+.busca-slot .busca-g { margin-left: 0; max-width: none; }
+.els button .vivo { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--live); margin-right: 6px; vertical-align: 1px; }
+.els[hidden], .busca[hidden] { display: none; }

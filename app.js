@@ -25,7 +25,9 @@
 
   const nf = new Intl.NumberFormat('pt-BR');
   const pct = (v, d = 2) => (v == null || !isFinite(v) ? '—' : (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%');
-  const $ = (id) => document.getElementById(id);
+  // a página tem três visões com os mesmos ids; cada script só enxerga a sua
+  const RAIZ = document.getElementById('v-pres');
+  const $ = (id) => RAIZ.querySelector('#' + id);
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 
   // ---------- estado ----------
@@ -286,7 +288,7 @@
 
   function iniciaMapa() {
     mapa = new maplibregl.Map({
-      container: 'mapa',
+      container: $('mapa'),
       style: ESCURO ? 'https://tiles.openfreemap.org/styles/dark' : 'https://tiles.openfreemap.org/styles/positron',
       center: [-30, 5], zoom: 1.4, minZoom: 1, maxZoom: 17, attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false,
     });
@@ -696,9 +698,11 @@
     escolhe(sel);
     $('mapa').scrollIntoView({ behavior: MOV ? 'smooth' : 'auto', block: 'center' });
   }
-  window.apuracao = { escolhe, vaiPara, estado: S };
+  window.apuracao = { escolhe, vaiPara, trocaEleicao, estado: S, pronto: () => !!(mapa && mapa.loaded() && S.ufsGeo && S.hist), redimensiona: () => { if (mapa) mapa.resize(); evolucao(); } };
 
-  // ---------- início ----------
+  // ---------- início (chamado por filtros.js quando a visão aparece pela primeira vez) ----------
+  window.iniciaPres = (el0) => {
+  if (el0 && ELS.some((e) => e[0] === el0)) S.el = el0;
   seletor();
   carregaHistorico().then(() => { tudo(); }).catch(() => { $('status-txt').textContent = 'Falha ao carregar o histórico'; });
   iniciaMapa();
@@ -720,4 +724,5 @@
   setInterval(cicloZonas, 45000);
   setInterval(status, 1000);
   window.addEventListener('resize', () => evolucao());
+  };
 })();

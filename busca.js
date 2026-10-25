@@ -10,7 +10,7 @@
   const norm = (s) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const titulo = (s) => (s || '').toLowerCase().replace(/(^|[\s'(/-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/\b(Da|De|Do|Das|Dos|E)\b/g, (m) => m.toLowerCase());
 
-  const nav = document.querySelector('nav.secoes');
+  const nav = document.getElementById('busca-slot') || document.querySelector('nav.secoes');
   if (!nav) return;
   const caixa = document.createElement('div'); caixa.className = 'busca-g';
   caixa.innerHTML = '<input type="search" role="combobox" aria-expanded="false" aria-controls="busca-g-lista" aria-autocomplete="list" placeholder="Buscar estado, cidade, zona, escola, seção…" autocomplete="off"><ul id="busca-g-lista" role="listbox" hidden></ul>';
@@ -121,6 +121,7 @@
   function vai(r) {
     fecha(); inp.value = r.rot; inp.blur();
     const sel = r.sel;
+    if (window.buscaVai) return window.buscaVai(sel);
     if (window.apuracao && window.apuracao.vaiPara) return window.apuracao.vaiPara(sel);
     if (window.eleicoesVaiPara && window.eleicoesVaiPara(sel)) return;
     location.href = './#ir=' + encodeURIComponent(JSON.stringify(sel));
